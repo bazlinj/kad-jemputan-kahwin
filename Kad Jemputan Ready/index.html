@@ -126,6 +126,7 @@
         let pendingWishes = [];
         let pendingRSVPs = [];
         let isOnline = navigator.onLine;
+        let invitationOpened = false; // Flag untuk autoplay muzik
         
         const mainContentArea = document.getElementById('main-content-area');
         const drawersContainer = document.getElementById('drawers-container');
@@ -139,9 +140,7 @@
         const savePendingItems = (key, items) => localStorage.setItem(key, JSON.stringify(items));
         const loadPendingItems = (key) => JSON.parse(localStorage.getItem(key)) || [];
 
-        const retryAllPending = () => {
-             // This function is defined here to fix the ReferenceError
-        };
+        const retryAllPending = () => { /* Logic to retry failed submissions can be added here */ };
 
         const init = () => {
             fetchWithCache();
@@ -161,7 +160,7 @@
             }
 
             try {
-                const response = await fetch(DATA_URL); // Fetch from Google Apps Script (GET)
+                const response = await fetch(DATA_URL);
                 if (!response.ok) throw new Error('Network response was not ok.');
                 const freshData = await response.json();
                 
@@ -196,6 +195,7 @@
         };
         
         const openInvitation = () => {
+            invitationOpened = true; // Set flag apabila butang ditekan
             document.getElementById('cover-page-wrapper').style.opacity = '0';
             setTimeout(() => document.getElementById('cover-page-wrapper').style.display = 'none', 1000);
             
@@ -203,7 +203,9 @@
             
             renderAppContent();
             setActivePage('utama');
-            if (state.player && typeof state.player.unMute === 'function') {
+
+            // Cuba mainkan video jika pemain sudah sedia
+            if (state.player && typeof state.player.playVideo === 'function' && state.player.getPlayerState() !== 1) {
                 state.player.unMute();
                 state.player.playVideo();
             }
@@ -370,6 +372,11 @@
             const newPage = document.getElementById(`page-${pageId}`);
             if (newPage) {
                 newPage.classList.add('active');
+                if(pageId === 'ucapan') {
+                    const allWishes = [...mainData.RSVP, ...mainData.WishesOnly, ...pendingWishes].filter(w => w.Wishes && w.Wishes.trim() !== '');
+                    const lastPage = Math.ceil(allWishes.length / WISHES_PER_PAGE) || 1;
+                    renderWishes(lastPage, true);
+                }
                 setupScrollAnimations(newPage);
             }
             document.querySelectorAll('.bottom-nav-btn[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
@@ -501,7 +508,7 @@
         };
 
 
-        // --- FUNGSI LOGIK ---
+        // --- FUNGSI LOGIK UTAMA ---
         const startCountdown = () => {
             if (state.countdownInterval) clearInterval(state.countdownInterval);
             const targetDate = new Date(mainData.TextSettings[0].CalendarStartTimeISO).getTime();
@@ -524,33 +531,57 @@
         };
         
         const updateRsvpData = () => {
-            const attending = mainData.RSVP.filter(r => r.Attendance === 'Hadir').length;
+            const attending = mainData.RSVP
+                .filter(r => r.Attendance === 'Hadir')
+                .reduce((total, rsvp) => total + (parseInt(rsvp.Pax, 10) || 1), 0);
+            
             const notAttending = mainData.RSVP.filter(r => r.Attendance === 'Tidak Hadir').length;
+            
             const ctx = document.getElementById('rsvpChart')?.getContext('2d');
             if (ctx) {
                 if (state.rsvpChart) state.rsvpChart.destroy();
-                state.rsvpChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Hadir', 'Tidak Hadir'], datasets: [{ data: [attending, notAttending], backgroundColor: ['#34D399', '#F87171'], borderColor: '#f8fafc', borderWidth: 4 }] }, options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { padding: 20 } } } } });
+                state.rsvpChart = new Chart(ctx, { 
+                    type: 'doughnut', 
+                    data: { 
+                        labels: [`Hadir (${attending})`, `Tidak Hadir (${notAttending})`], 
+                        datasets: [{ 
+                            data: [attending, notAttending], 
+                            backgroundColor: ['#34D399', '#F87171'], 
+                            borderColor: '#f8fafc', 
+                            borderWidth: 4 
+                        }] 
+                    }, 
+                    options: { 
+                        responsive: true, 
+                        cutout: '70%', 
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { padding: 20, font: { size: 14 } } } 
+                        } 
+                    } 
+                });
             }
             renderWishes(state.currentWishesPage);
         };
         
         const updateTimestamps = () => {
-            const timestampElements = document.querySelectorAll('[data-timestamp]');
-            timestampElements.forEach(el => {
-                const ts = el.getAttribute('data-timestamp');
-                el.textContent = timeAgo(ts);
+            document.querySelectorAll('[data-timestamp]').forEach(el => {
+                el.textContent = timeAgo(el.getAttribute('data-timestamp'));
             });
         };
 
-        const renderWishes = (page = 1) => {
-            state.currentWishesPage = page;
+        const renderWishes = (page, scrollToBottom = false) => {
             const listEl = document.getElementById('wishes-list'), paginationEl = document.getElementById('wishes-pagination');
             if (!listEl || !paginationEl) return;
             
             const allWishes = [...mainData.RSVP, ...mainData.WishesOnly, ...pendingWishes].filter(w => w.Wishes && w.Wishes.trim() !== '');
-            allWishes.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp)); // Sort descending, newest first
+            allWishes.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp)); // Ascending: Oldest first
             
-            const start = (page - 1) * WISHES_PER_PAGE, end = start + WISHES_PER_PAGE;
+            const pageCount = Math.ceil(allWishes.length / WISHES_PER_PAGE) || 1;
+            const currentPage = page > pageCount ? pageCount : (page || pageCount);
+            state.currentWishesPage = currentPage;
+
+            const start = (currentPage - 1) * WISHES_PER_PAGE;
+            const end = start + WISHES_PER_PAGE;
             const paginatedWishes = allWishes.slice(start, end);
             
             listEl.innerHTML = paginatedWishes.length > 0 ? paginatedWishes.map(wish => `
@@ -563,20 +594,27 @@
                             ${timeAgo(wish.Timestamp)}
                         </p>
                     </div>
-                    <p class="text-slate-800 text-base mt-1">${wish.Wishes}</p>
+                    <p class="text-slate-800 text-base mt-1 break-words">${wish.Wishes}</p>
                 </div>`).join('') : '<p class="text-center text-slate-500 bg-white/70 rounded-full py-2">Jadilah yang pertama memberi ucapan!</p>';
             
             updateTimestamps();
 
-            const pageCount = Math.ceil(allWishes.length / WISHES_PER_PAGE);
-            paginationEl.innerHTML = pageCount > 1 ? Array.from({ length: pageCount }, (_, i) => `<button data-page="${i+1}" class="w-7 h-7 text-xs rounded-full mx-1 ${i+1 === page ? 'bg-white font-bold' : 'bg-white/50'}">${i+1}</button>`).join('') : '';
+            paginationEl.innerHTML = pageCount > 1 ? Array.from({ length: pageCount }, (_, i) => `<button data-page="${i+1}" class="w-7 h-7 text-xs rounded-full mx-1 ${i+1 === currentPage ? 'bg-white font-bold' : 'bg-white/50'}">${i+1}</button>`).join('') : '';
+            
+            if (scrollToBottom) {
+                setTimeout(() => listEl.scrollTop = listEl.scrollHeight, 100);
+            }
 
             if (state.timeAgoInterval) clearInterval(state.timeAgoInterval);
             state.timeAgoInterval = setInterval(updateTimestamps, 60000);
         };
         
         const setupWishForm = () => {
-            document.body.addEventListener('click', (e) => { if (e.target.matches('#wishes-pagination button')) { renderWishes(parseInt(e.target.dataset.page)); } });
+            document.body.addEventListener('click', (e) => { 
+                if (e.target.matches('#wishes-pagination button')) { 
+                    renderWishes(parseInt(e.target.dataset.page), true);
+                } 
+            });
             const form = document.getElementById('wish-form');
             form?.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -594,20 +632,24 @@
                 const wishPayload = { Name: nameInput.value.trim(), Wishes: wishInput.value.trim() };
                 const postData = { action: 'addWish', payload: wishPayload };
                 
-                // Submit to Netlify Function (POST)
                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(postData), headers: {'Content-Type': 'application/json'} })
                 .then(res => res.json())
                 .then(res => {
                     if (res.result !== "success") throw new Error(res.error || "Unknown error");
+                    
                     wishPayload.Timestamp = new Date().toISOString();
                     mainData.WishesOnly.push(wishPayload);
                     saveDataToCache(mainData);
-                    renderWishes(state.currentWishesPage);
+                    
+                    const allWishes = [...mainData.RSVP, ...mainData.WishesOnly].filter(w => w.Wishes && w.Wishes.trim() !== '');
+                    const lastPage = Math.ceil(allWishes.length / WISHES_PER_PAGE) || 1;
+                    renderWishes(lastPage, true);
+                    
                     nameInput.value = ''; wishInput.value = '';
                     showToast('Ucapan anda telah dihantar!');
                 })
                 .catch(error => {
-                    console.error('Error!', error.message);
+                    console.error('Error submitting wish:', error.message);
                     showToast('Gagal menghantar ucapan. Sila cuba lagi.');
                 })
                 .finally(() => {
@@ -623,12 +665,8 @@
             form.elements.Attendance.forEach(radio => radio.addEventListener('change', (e) => paxSection.classList.toggle('hidden', e.target.value !== 'Hadir')));
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                 if (!form.elements.Name.value.trim()) {
-                    showToast('Sila masukkan nama anda.');
-                    return;
-                }
-                 if (!form.elements.Attendance.value) {
-                    showToast('Sila pilih status kehadiran.');
+                 if (!form.elements.Name.value.trim() || !form.elements.Attendance.value) {
+                    showToast('Sila isi nama dan status kehadiran.');
                     return;
                 }
 
@@ -640,7 +678,6 @@
                 const rsvpPayload = Object.fromEntries(new FormData(form).entries());
                 const postData = { action: 'addRsvp', payload: rsvpPayload };
 
-                // Submit to Netlify Function (POST)
                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(postData), headers: {'Content-Type': 'application/json'} })
                 .then(res => res.json())
                 .then(res => {
@@ -665,7 +702,7 @@
                     }
                 })
                 .catch(error => {
-                     console.error('Error!', error.message);
+                     console.error('Error submitting RSVP:', error.message);
                      showToast('Gagal menghantar RSVP. Sila cuba lagi.');
                 })
                  .finally(() => {
@@ -702,7 +739,11 @@
         };
 
         function onPlayerReady(event) {
-            // Player is ready. Autoplay will be triggered by "Buka Jemputan".
+            // Jika pengguna sudah buka jemputan SEBELUM pemain sedia, mainkan sekarang
+            if (invitationOpened) {
+                event.target.unMute();
+                event.target.playVideo();
+            }
         }
         
         function onPlayerStateChange(event) {
