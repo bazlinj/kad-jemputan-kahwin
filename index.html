@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Jemputan digital ke Majlis Perkahwinan. RSVP, ucapan, lokasi, hadiah dan info pengantin.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jemputan ke Majlis Perkahwinan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Tangerine:wght@700&family=Scheherazade+New:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styling */
+        body { font-family: 'Montserrat', sans-serif; background-color: #e2e8f0; font-weight: 400; }
+        .font-header { font-family: 'Montserrat', sans-serif; font-weight: 700; }
+        .font-script { font-family: 'Tangerine', cursive; }
+        .font-arabic { font-family: 'Scheherazade New', serif; }
+        button:focus, input:focus, textarea:focus, select:focus { outline: none !important; outline-offset: 0 !important; }
+
+        /* App Layout */
+        .app-wrapper { max-width: 420px; margin: auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 100vh; overflow: hidden; background-color: #f8fafc; }
+        #app-video-bg { position: absolute; top: 50%; left: 50%; width: auto; height: auto; min-width: 100%; min-height: 100%; z-index: 1; transform: translateX(-50%) translateY(-50%); object-fit: cover; transition: opacity 1s ease-in; opacity: 0; }
+        
+        /* Page & Content Animations */
+        .page { position: absolute; inset: 0; z-index: 10; overflow-y: auto; background-color: transparent; }
+        .fade-in-up { opacity: 0; transform: translateY(30px); transition: opacity .8s, transform .8s; }
+        .fade-in-up.is-visible { opacity: 1; transform: translateY(0); }
+        .smooth-zoom-bg { animation: smooth-zoom-animation 30s infinite alternate ease-out; }
+        @keyframes smooth-zoom-animation { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+        .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid #fff; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Loading Screen Animation */
+        .logo-reveal-animation {
+            animation: logo-reveal 2.5s ease-in-out forwards;
+        }
+        @keyframes logo-reveal {
+            0% { transform: scale(0.7); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Glass Card Effect */
+        .glass-card { background-color: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 1rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+
+        /* Bottom Navigation */
+        #bottom-nav {
+        z-index: 60;
+        height: 64px; /* or 56px or whatever your nav actually is */
+        }
+        .bottom-nav-btn.active { color: #2563EB; }
+
+        
+        /* Drawer System */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.drawer.active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.drawer.active .drawer-backdrop {
+  opacity: 1;
+}
+
+.drawer-content {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 1.5rem 1.5rem 0 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  z-index: 51;
+  overflow: hidden;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.drawer.active .drawer-content {
+  transform: translateX(-50%) translateY(0);
+}
+        
+        /* Toast Notification */
+        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 9999px; z-index: 100; transition: bottom 0.5s ease-in-out; }
+        .toast.show { bottom: 80px; }
+
+        /* Wishes Marquee */
+        .wishes-marquee { overflow: hidden; white-space: nowrap; display: flex; }
+        .wishes-marquee-content { display: flex; animation: marquee 40s linear infinite; }
+        .wishes-marquee:hover .wishes-marquee-content { animation-play-state: paused; }
+        .wish-item { flex-shrink: 0; width: 280px; margin-right: 1rem; cursor: pointer; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; line-clamp: 2; }
+
+        /* Music Button Animation */
+        @keyframes music-bars { 0% { transform: scaleY(0.3); } 25% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } 75% { transform: scaleY(0.8); } 100% { transform: scaleY(0.3); } }
+        .music-playing svg path { animation: music-bars 1.2s infinite ease-in-out; transform-origin: center; }
+        .music-playing svg path:nth-child(2) { animation-delay: 0.2s; }
+        .music-playing svg path:nth-child(3) { animation-delay: 0.4s; }
+        
+        /* New Timeline Style for Aturcara Majlis */
+        .timeline { position: relative; padding-left: 2.9rem; }
+        .timeline::before { content: ''; position: absolute; left: 1.125rem; top: 0.5rem; bottom: 0.5rem; width: 2px; background-color: #cbd5e1; }
+        .timeline-item { position: relative; margin-bottom: 1.5rem; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-dot { position: absolute; left: -2.125rem; top: 0.375rem; width: 0.75rem; height: 0.75rem; background-color: #3b82f6; border-radius: 9999px; border: 2px solid white; box-shadow: 0 0 0 2px #3b82f6; }
+        .timeline-time { font-weight: 700; color: #475569; }
+        .timeline-title { font-weight: 600; color: #1e293b; }
+        .timeline-description { font-size: 0.875rem; color: #64748b; }
+    </style>
+</head>
+
+<body>
+<div class="app-wrapper" role="main">
+    <video autoplay loop muted playsinline id="app-video-bg"></video>
+    
+    <!-- COVER PAGE -->
+    <div id="cover-page-wrapper" class="absolute inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-500" aria-modal="true" role="dialog">
+        <div id="cover-page" class="relative w-full max-w-sm flex flex-col items-center justify-center text-center p-8 glass-card" tabindex="-1">
+            <div id="cover-content" class="text-slate-800 opacity-0 transition-opacity duration-1000 delay-500 w-full">
+                <img src="media/snlogo.svg" alt="Wedding Logo" class="w-24 h-24 mx-auto mb-4" onerror="this.onerror=null; this.src='https://placehold.co/96x96/e0e0e0/333?text=Logo';">
+                <h2 class="font-header text-2xl tracking-widest text-slate-700">WALIMATULURUS</h2>
+                <h1 id="cover-groom" class="font-script text-5xl leading-tight whitespace-nowrap text-blue-800 mt-6"></h1>
+                <h2 class="font-script text-4xl my-1">&</h2>
+                <h1 id="cover-bride" class="font-script text-5xl leading-tight whitespace-nowrap text-blue-800"></h1>
+                <div class="mt-6 text-slate-700 space-y-1">
+                    <p id="cover-date" class="font-semibold text-lg"></p>
+                    <p id="cover-location" class="font-medium"></p>
+                </div>
+                <button id="open-invitation-btn" class="mt-8 bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-3 w-full" aria-label="Buka Jemputan">
+                    <i data-lucide="mail"></i>
+                    <span>Buka Jemputan</span>
+                </button>
+            </div>
+            <div id="cover-loading" class="text-slate-700" aria-live="polite">
+                <p>Anda telah dijemput...</p>
+                <div class="spinner border-slate-700/30 border-t-slate-700 mx-auto mt-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 z-[99] bg-slate-100 flex items-center justify-center transition-opacity duration-1000" style="display: none;">
+        <img src="media/snlogo.svg" alt="Loading..." class="w-32 h-32 logo-reveal-animation" onerror="this.onerror=null; this.src='https://placehold.co/128x128/e0e0e0/333?text=Logo';">
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-container" class="opacity-0 transition-opacity duration-1000">
+        <main id="main-content-area" class="relative min-h-screen page active" tabindex="-1"></main>
+        <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-sm shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-[60] rounded-t-2xl transition-transform duration-300" aria-label="Navigasi utama">
+            <div class="flex justify-around">
+                <button data-drawer="utama" class="bottom-nav-btn active flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Utama" aria-label="Utama"><i data-lucide="home"></i></button>
+                <button data-drawer="lokasi" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Lokasi" aria-label="Lokasi"><i data-lucide="map-pin"></i></button>
+                <button data-drawer="ucapan" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Ucapan" aria-label="Ucapan"><i data-lucide="message-square-heart"></i></button>
+                <button data-drawer="hadiah" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Hadiah" aria-label="Hadiah"><i data-lucide="gift"></i></button>
+                <button data-drawer="telefon" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Hubungi" aria-label="Hubungi"><i data-lucide="phone"></i></button>
+            </div>
+        </nav>
+    </div>
+    
+    <div id="drawers-container"></div>
+    <div id="audio-player" class="w-0 h-0 overflow-hidden"></div>
+        <div id="toast" class="toast" aria-live="polite"></div>
+</div>
+
+
+<script>
+// --- GLOBAL STATE & CONFIG ---
+const DATA_URL = 'https://script.google.com/macros/s/AKfycbyaEfnvqAbf0XAyu2av1ktLEJ2FgU60IEziTA7RzwpXvaGb_ZVcnTr244rFNMeU3DaF/exec';
+const WISHES_PER_PAGE = 10;
+const giftLinkData = [
+    { name: "Touch 'n Go e-Wallet", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Touch_%27n_Go_eWallet_logo.svg/2024px-Touch_%27n_Go_eWallet_logo.svg.png", url: "https://visit.tngdigital.com.my/Gift" },
+    { name: "Grab Gifts", logo: "https://1000logos.net/wp-content/uploads/2022/08/Grab-Logo.png", url: "https://gifts.grab.com/my/" },
+    { name: "Setel Voucher", logo: "https://images.crunchbase.com/image/upload/c_pad,f_auto,q_auto:eco,dpr_1/05e9b2407d294b538fd9e646c143b588", url: "https://www.setel.com/PETRONAS-Shop/product/setel-voucher" },
+    { name: "Shopee Gift Card", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopee_logo.svg/2560px-Shopee_logo.svg.png", url: "https://www.seagm.com/en-my/shopee-cash-e-voucher" },
+    { name: "Zus Coffee Gift Card", logo: "https://judgeme.imgix.net/g/unknown/1656878258__Full_Colour_450x_4a385410-999f-4d5b-9906-8c3555724456__original.png", url: "https://www.seagm.com/zus-coffee-cash-voucher-my" },
+            { name: "Harvey Norman e-Gift Card", logo: "https://devicenetwork.s3.eu-west-2.amazonaws.com/images/logo/0wsxe7n.png", url: "https://www.harveynorman.com.my/gift-cards/harvey-norman-e-gift-card.html" },
+            { name: "Klook Gift Card", logo: "https://1000logos.net/wp-content/uploads/2023/11/Klook-Logo.png", url: "https://www.klook.com/en-MY/klook-gift-card/" },
+            { name: "Malaysia Airlines Gift Card", logo: "https://www.flightaware.com/images/airline_logos/180px/MAS.png", url: "https://vouchers.malaysiaairlines.com/en-gb/gift-cards/wedding-gift-card" }
+];
+
+let mainData = {};
+let state = {
+    currentWishesPage: 1,
+    countdownInterval: null,
+    audioPlayer: null,
+    timeAgoInterval: null,
+    isMusicPlaying: false,
+    galleryInterval: null,
+    activeDrawer: 'utama',
+    marqueeExpandedIndex: null,
+    rsvpStep: 1
+};
+let scrollObserver, invitationOpened = false;
+let mainContentArea, drawersContainer;
+
+// --- UTILITIES ---
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3200);
+}
+
+function validateRSVPForm(data) {
+    const errors = [];
+    
+    if (!data.Name || data.Name.trim().length < 3) {
+        errors.push('Sila isi nama anda');
+    }
+    
+    if (!data.PhoneNumber || !/^[0-9]{10,12}$/.test(data.PhoneNumber.replace(/\D/g, ''))) {
+        errors.push('Nombor telefon tidak sah');
+    }
+    
+    if (data.Attendance === 'Hadir' && (!data.Pax || isNaN(data.Pax) || data.Pax < 1)) {
+        errors.push('Sila buat pilihan');
+    }
+    
+    return errors;
+}
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    mainContentArea = document.getElementById('main-content-area');
+    drawersContainer = document.getElementById('drawers-container');
+    lucide.createIcons();
+    setupYouTubeAPI();
+    
+    const coverVideo = document.getElementById('app-video-bg');
+    if (coverVideo) {
+        coverVideo.src = "media/wallpaper.mp4";
+        coverVideo.oncanplay = () => { setTimeout(() => { coverVideo.style.opacity = '0.3'; }, 500); };
+    }
+
+    fetchWithCache();
+    window.addEventListener('online', () => showToast('Kembali dalam talian'));
+    window.addEventListener('offline', () => showToast('Anda kini di luar talian'));
+});
+
+// --- DATA HANDLING ---
+function saveDataToCache(data) {
+    try {
+        // Check available space
+        const testData = new Array(1024).join('a');
+        try {
+            localStorage.setItem('test', testData);
+            localStorage.removeItem('test');
+        } catch (e) {
+            console.warn('LocalStorage is full or not available');
+            return;
+        }
+        
+        const dataToStore = {
+            ...data,
+            lastUpdated: new Date().toISOString(),
+            _size: JSON.stringify(data).length
+        };
+        
+        localStorage.setItem('wedding_data', JSON.stringify(dataToStore));
+    } catch (e) {
+        console.error("Failed to save data to cache", e);
+    }
+}
+
+function loadDataFromCache() {
+    try { return JSON.parse(localStorage.getItem('wedding_data')); } catch (e) { return null; }
+}
+
+async function fetchWithCache() {
+    const cached = loadDataFromCache();
+    if (cached) {
+        mainData = cached;
+        displayCoverPage();
+    }
+    try {
+        const response = await fetch(DATA_URL);
+        if (!response.ok) throw new Error('Network response was not ok.');
+        const freshData = await response.json();
+        
+        if (!cached || !cached.lastUpdated || (new Date(freshData.lastUpdated) > new Date(cached.lastUpdated))) {
+            mainData = freshData;
+            saveDataToCache(mainData);
+        }
+        
+        if (mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
+            createAudioPlayer(mainData.Song[0].YoutubeID);
+        }
+
+        if (!invitationOpened) {
+            displayCoverPage();
+        } else {
+            renderAppContent();
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        if (!cached) {
+            document.getElementById('cover-loading').innerHTML = '<p class="text-red-500">Gagal memuatkan data. Sila periksa sambungan internet anda.</p>';
+        }
+    }
+}
+
+// --- COVER PAGE & APP OPENING ---
+function displayCoverPage() {
+    if (!mainData.TextSettings || !mainData.TextSettings[0]) {
+        document.getElementById('cover-loading').innerHTML = '<p class="text-red-500">Konfigurasi jemputan tidak dijumpai.</p>';
+        return;
+    }
+    const settings = mainData.TextSettings[0];
+    document.getElementById('cover-groom').textContent = settings.GroomName || "";
+    document.getElementById('cover-bride').textContent = settings.BrideName || "";
+    document.getElementById('cover-date').textContent = settings.EventDate || "";
+    document.getElementById('cover-location').textContent = settings.VenueName || "";
+
+    document.getElementById('cover-loading').style.display = 'none';
+    document.getElementById('cover-content').classList.remove('opacity-0');
+    document.getElementById('open-invitation-btn').addEventListener('click', openInvitation, { once: true });
+}
+
+let playMusicOnReady = false;
+
+function openInvitation() {
+    invitationOpened = true;
+    const coverWrapper = document.getElementById('cover-page-wrapper');
+    const loadingScreen = document.getElementById('loading-screen');
+    const appContainer = document.getElementById('app-container');
+
+    // 1. Fade out cover page
+    coverWrapper.style.opacity = '0';
+    coverWrapper.addEventListener('transitionend', () => {
+        coverWrapper.style.display = 'none';
+    }, { once: true });
+
+    // 2. Show loading screen
+    loadingScreen.style.display = 'flex';
+
+    // 3. Render main content in the background
+    renderAppContent();
+
+    // 4. Wait for animation to finish, then show app
+    setTimeout(() => {
+        // Fade out loading screen
+        loadingScreen.style.opacity = '0';
+        loadingScreen.addEventListener('transitionend', () => {
+            loadingScreen.style.display = 'none';
+        }, { once: true });
+
+        // Fade in the main app
+        appContainer.style.opacity = '1';
+
+        // Autoplay music
+        if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
+            state.audioPlayer.unMute();
+            state.audioPlayer.playVideo();
+        } else {
+            playMusicOnReady = true;
+        }
+    }, 3000); // 3-second delay for the loading animation
+}
+
+
+// --- DRAWER SYSTEM ---
+function createDrawer(id, title, content, footerContent = '') {
+    return `<div id="drawer-${id}" class="drawer" role="dialog" aria-label="${escapeHTML(title)}">
+        <div class="drawer-backdrop"></div>
+        <div class="drawer-content flex flex-col pb-[80px]"> <!-- Added pb-[80px] here -->
+            <button class="drawer-close absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl" aria-label="Tutup">&times;</button>
+            <h2 class="font-header text-2xl pt-6 mb-4 text-center flex-shrink-0">${escapeHTML(title)}</h2>
+            <div class="flex-grow overflow-y-auto px-6">${content}</div>
+            ${footerContent ? `
+            <div class="drawer-footer pt-4 border-t border-slate-200 bg-white sticky bottom-0">
+                ${footerContent}
+            </div>` : ""}
+        </div>
+    </div>`;
+}
+
+
+
+function setActiveDrawer(drawerId) {
+    const activeDrawer = document.querySelector('.drawer.active');
+    if (activeDrawer) activeDrawer.classList.remove('active');
+    
+    if (drawerId && drawerId !== 'utama') {
+        const newDrawer = document.getElementById(`drawer-${drawerId}`);
+        if (newDrawer) newDrawer.classList.add('active');
+    }
+    state.activeDrawer = drawerId || 'utama';
+    
+    document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.drawer === state.activeDrawer);
+    });
+}
+
+// --- MAIN CONTENT RENDERING ---
+function renderAppContent() {
+    const settings = mainData.TextSettings[0];
+    const galleryImages = mainData.Gallery || [];
+
+    const heroHTML = `<div class="relative h-96 rounded-2xl overflow-hidden shadow-xl fade-in-up" tabindex="0" aria-label="Gambar pengantin utama">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${escapeHTML(mainData.HeroImages?.[0]?.Utama || "")}')">
+            <div class="absolute inset-0 smooth-zoom-bg" style="background-image: inherit; background-position: center; background-size: cover;"></div>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col items-center justify-end text-center p-6 text-white z-10">
+            <h1 class="font-script text-5xl leading-tight">${escapeHTML(settings.GroomName)}</h1>
+            <h2 class="font-script text-4xl my-1">&</h2>
+            <h1 class="font-script text-5xl leading-tight">${escapeHTML(settings.BrideName)}</h1>
+        </div>
+    </div>`;
+
+    const mainCardHTML = `<div class="glass-card p-6 text-center fade-in-up space-y-4">
+        <img src="media/snlogo.svg" alt="Wedding Logo" class="w-20 h-20 mx-auto" onerror="this.onerror=null; this.src='https://placehold.co/80x80/e0e0e0/333?text=Logo';">
+        <p class="font-arabic text-2xl text-slate-700">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</p>
+        <p class="text-sm text-slate-600 leading-relaxed">
+            Assalamualaikum dan Salam Sejahtera. Dengan penuh kesyukuran, kami<br><br>
+            <strong class="font-semibold text-slate-800">Tengku Azelan Shah Bin Tengku Ibrahim & Safiah Ismail</strong><br><br>
+            ingin menjemput<br>
+            <br><strong class="font-semibold text-slate-800">YM Tengku/Tan Sri/Puan Sri/Dato' Sri/Datin Sri/Dato'/Datin/Tuan/Puan</strong><br><br>
+            ke majlis resepsi perkahwinan putera kami dan pasangan-nya
+        </p><br>
+        <div>
+            <p class="font-script text-5xl text-blue-800">${escapeHTML(settings.GroomName)}</p>
+            <p class="font-script text-4xl">&</p>
+            <p class="font-script text-5xl text-blue-800">${escapeHTML(settings.BrideName)}</p>
+        </div><br>
+        <hr class="border-slate-300/70 my-4">
+        <div class="space-y-3 text-slate-800">
+            <div><p class="text-xs tracking-widest uppercase text-slate-500">Tempat</p><p class="font-semibold text-lg">${escapeHTML(settings.VenueName)}</p></div>
+            <hr class="border-slate-300/70 my-4">
+            <div><p class="text-xs tracking-widest uppercase text-slate-500">Tarikh</p><p class="font-semibold text-lg">${escapeHTML(settings.EventDate)}</p></div>
+            <div id="countdown" class="flex justify-center space-x-4 text-slate-600 pt-2"></div>
+            <hr class="border-slate-300/70 my-4">
+            <div><p class="text-xs tracking-widest uppercase text-slate-500">Waktu</p><p class="font-semibold text-lg">${escapeHTML(settings.EventTime)}</p></div>
+        </div>
+        <a href="${generateCalendarLink()}" target="_blank" class="mt-4 inline-flex items-center justify-center w-full space-x-2 bg-slate-100/50 text-slate-700 px-4 py-3 rounded-lg font-semibold hover:bg-slate-200/70 transition"><i data-lucide="calendar-plus"></i><span>Tambah ke Kalendar</span></a>
+        <hr class="border-slate-300/70 my-4"><br>
+        <div>
+            <h3 class="font-header text-xl text-slate-800 mb-6">Aturcara Majlis</h3>
+            <div class="timeline text-left max-w-xs mx-auto">
+                <div class="timeline-item"><div class="timeline-dot"></div><p class="timeline-time">11:00 AM</p><p class="timeline-title">Ketibaan Tetamu</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><p class="timeline-time">12:30 PM</p><p class="timeline-title">Ketibaan Pengantin</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><p class="timeline-time">12:50 PM</p><p class="timeline-title">Acara Salam Restu</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><p class="timeline-time">01:30 PM</p><p class="timeline-title">Makan Beradab</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><p class="timeline-time">02:00 PM</p><p class="timeline-title">Sesi Fotografi</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><p class="timeline-time">04:00 PM</p><p class="timeline-title">Majlis Bersurai</p></div>
+            </div>
+        </div>
+    </div>`;
+
+    const galleryHTML = (galleryImages.length > 0) ? `<div class="glass-card p-4 fade-in-up">
+        <h2 class="font-header text-2xl text-slate-800 text-center mb-4">Galeri</h2>
+        <div class="gallery-container relative w-full h-64 overflow-hidden rounded-lg">
+            ${galleryImages.map((img, idx) => `<img src="${escapeHTML(img.ImageURL)}" class="gallery-item absolute w-full h-full object-cover transition-opacity duration-1000" style="opacity: ${idx === 0 ? 1 : 0};" onerror="this.onerror=null; this.src='https://placehold.co/400x256/e0e0e0/333?text=Image';">`).join('')}
+            <button class="gallery-prev absolute top-1/2 left-2 -translate-y-1/2 bg-black/30 text-white rounded-full p-1 z-10 hover:bg-black/50 transition"><i data-lucide="chevron-left"></i></button>
+            <button class="gallery-next absolute top-1/2 right-2 -translate-y-1/2 bg-black/30 text-white rounded-full p-1 z-10 hover:bg-black/50 transition"><i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>` : '';
+
+    const wishesCarouselHTML = `<div class="glass-card p-6 text-center fade-in-up">
+        <h2 class="font-header text-2xl text-slate-800 mb-4">Setulus Ingatan</h2>
+        <div id="wishes-marquee-container" class="wishes-marquee"></div>
+        <button data-drawer="ucapan" class="mt-4 bg-blue-100/70 text-blue-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-200/70 transition-all transform hover:scale-105">Tulis Ucapan Anda</button>
+    </div>  `;
+
+    const rsvpButtonHTML = `<div class="glass-card p-6 text-center fade-in-up">
+        
+        <button data-drawer="rsvp" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105">RSVP: Kehadiran</button>
+    </div>`;
+
+    const musicButtonHTML = `<div class="glass-card p-4 text-center fade-in-up">
+        <button id="music-control-btn" class="w-full flex items-center justify-center space-x-2 py-2">
+            <i data-lucide="audio-lines" class="text-blue-600"></i>
+            <span id="music-btn-text" class="font-semibold text-slate-700"></span>
+        </button>
+    </div>`;
+
+    mainContentArea.innerHTML = `<div class="p-4 space-y-6 pb-24">${heroHTML}${mainCardHTML}${galleryHTML}${wishesCarouselHTML}${rsvpButtonHTML}${musicButtonHTML}</div>`;
+    
+    // --- Drawers setup ---
+    const locationDrawerContent = `<div class="space-y-4">
+        <div class="w-full h-64 rounded-xl overflow-hidden shadow-inner">
+            <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?q=${encodeURIComponent(settings.VenueAddress)}&t=&z=16&ie=UTF8&iwloc=B&output=embed"></iframe>
+        </div>
+        <div class="mt-4 flex justify-center space-x-4">
+            <a href="${settings.GoogleMapsLink}" target="_blank" class="inline-flex items-center space-x-2 bg-blue-100/70 text-blue-800 px-5 py-2 rounded-full font-semibold hover:bg-blue-200/70 transition"><span>Google Maps</span></a>
+            <a href="${settings.WazeLink}" target="_blank" class="inline-flex items-center space-x-2 bg-blue-100/70 text-blue-800 px-5 py-2 rounded-full font-semibold hover:bg-blue-200/70 transition"><span>Waze</span></a>
+        </div>
+    </div>`;
+
+    const ucapanDrawerContent = `<div class="flex flex-col h-full">
+        <div id="wishes-list" class="flex-grow overflow-y-auto space-y-4 p-1 pb-4"></div>
+        <div id="wishes-pagination" class="py-2 flex justify-center flex-shrink-0"></div>
+        <div class="pt-2 flex-shrink-0">
+            <form id="wish-form" class="space-y-2 bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-lg">
+                <input type="text" id="wish-name-input" placeholder="Nama Anda" class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="wish-input" placeholder="Tulis ucapan anda..." class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <button type="submit" class="bg-green-500 text-white w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full transition transform hover:scale-110"><i data-lucide="send"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>`;
+    
+    const giftFooter = (mainData.GiftInfo && mainData.GiftInfo[0]) ? `<div class="p-4 text-center"><p class="text-xs text-slate-500">Gunakan info ini semasa pembelian Kad Hadiah</p><p class="text-sm text-slate-700 mt-1">${escapeHTML(mainData.GiftInfo[0].RecipientName)} <span class="font-semibold">${escapeHTML(mainData.GiftInfo[0].RecipientPhoneNumber)}</span></p></div>` : "";
+
+    const rsvpFooter = `<div class="p-4 text-center"><p class="text-xs text-slate-500">Kad Digital ini dibina oleh <a href="https://b.my/bazlinj" target="_blank" class="font-semibold text-blue-600 hover:underline">@bazlinj</a></p></div>`;
+
+    drawersContainer.innerHTML =
+        createDrawer('lokasi', 'Lokasi Majlis', locationDrawerContent) +
+        createDrawer('ucapan', 'Buku Ucapan', ucapanDrawerContent) +
+        createDrawer('hadiah', 'Hadiah Perkahwinan', `<div id="gift-list" class="space-y-3"></div>`, giftFooter) +
+        createDrawer('telefon', 'Hubungi Kami', `<div id="contact-list" class="space-y-4"></div>`) +
+        createDrawer('rsvp', 'RSVP Kehadiran', `<div id="rsvp-multistep-form" class="flex flex-col h-full"></div>`, rsvpFooter);
+
+    lucide.createIcons();
+    updateAllUI();
+    setupAllEventListeners();
+}
+
+// --- UI UPDATES & EVENT LISTENERS ---
+function updateAllUI() {
+    startCountdown();
+    renderGiftList();
+    renderContactList();
+    setupScrollAnimations(document.body);
+    setupGallery();
+    renderWishesMarquee();
+    renderWishes(1);
+    updateMusicButton(state.isMusicPlaying);
+}
+
+function setupAllEventListeners() {
+    setupMusicControlButton();
+    setupNavAndDrawers();
+    setupRsvpMultiStepForm();
+    setupWishForm();
+}
+
+function setupNavAndDrawers() {
+    // Handle clicks on nav buttons and any button with data-drawer attribute
+    document.body.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-drawer]');
+        if (button) {
+            setActiveDrawer(button.dataset.drawer);
+        }
+    });
+
+    // Handle closing drawers
+    drawersContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('drawer-backdrop') || e.target.closest('.drawer-close')) {
+            const drawer = e.target.closest('.drawer');
+            if (drawer) {
+                drawer.classList.remove('active');
+                setActiveDrawer('utama'); // Reset to main page view
+            }
+        }
+    });
+}
+
+function setupScrollAnimations(container) {
+    const elements = container.querySelectorAll('.fade-in-up');
+    if ("IntersectionObserver" in window) {
+        if (scrollObserver) scrollObserver.disconnect();
+        scrollObserver = new window.IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    scrollObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        elements.forEach(el => scrollObserver.observe(el));
+    } else {
+        elements.forEach(el => el.classList.add('is-visible'));
+    }
+}
+
+// --- FEATURE: COUNTDOWN ---
+function startCountdown() {
+    if (state.countdownInterval) clearInterval(state.countdownInterval);
+    const el = document.getElementById('countdown');
+    if (!el || !mainData.TextSettings?.[0]?.CalendarStartTimeISO) return;
+    const targetDate = new Date(mainData.TextSettings[0].CalendarStartTimeISO).getTime();
+    
+    function update() {
+        const distance = targetDate - new Date().getTime();
+        if (distance < 0) {
+            clearInterval(state.countdownInterval);
+            el.innerHTML = "<p class='font-header text-lg'>Majlis telah berlangsung!</p>";
+            return;
+        }
+        const d = String(Math.floor(distance / 864e5)).padStart(2,'0');
+        const h = String(Math.floor((distance % 864e5) / 36e5)).padStart(2,'0');
+        const m = String(Math.floor((distance % 36e5) / 6e4)).padStart(2,'0');
+        const s = String(Math.floor((distance % 6e4) / 1e3)).padStart(2,'0');
+        el.innerHTML = `
+           <div class="bg-blue-100 px-4 py-2 rounded-lg shadow text-center">
+    <div class="font-header text-2xl">${d}</div>
+    <div class="text-xs">Hari</div>
+  </div>
+  <div class="bg-blue-100 px-4 py-2 rounded-lg shadow text-center">
+    <div class="font-header text-2xl">${h}</div>
+    <div class="text-xs">Jam</div>
+  </div>
+  <div class="bg-blue-100 px-4 py-2 rounded-lg shadow text-center">
+    <div class="font-header text-2xl">${m}</div>
+    <div class="text-xs">Minit</div>
+  </div>
+  <div class="bg-blue-100 px-4 py-2 rounded-lg shadow text-center">
+    <div class="font-header text-2xl">${s}</div>
+    <div class="text-xs">Saat</div>
+  </div>
+        `;
+    }
+    update();
+    state.countdownInterval = setInterval(update, 1000);
+}
+
+// --- FEATURE: GALLERY ---
+function setupGallery() {
+    const gallery = document.querySelector('.gallery-container');
+    if (!gallery) return;
+    const items = gallery.querySelectorAll('.gallery-item');
+    if (items.length <= 1) {
+        gallery.querySelector('.gallery-prev')?.style.setProperty('display', 'none');
+        gallery.querySelector('.gallery-next')?.style.setProperty('display', 'none');
+        return;
+    };
+    let currentIndex = 0;
+    
+    function showImage(index) {
+        items.forEach((item, i) => { item.style.opacity = (i === index ? '1' : '0'); });
+    }
+    const next = () => { currentIndex = (currentIndex + 1) % items.length; showImage(currentIndex); };
+    const prev = () => { currentIndex = (currentIndex - 1 + items.length) % items.length; showImage(currentIndex); };
+    
+    gallery.querySelector('.gallery-next')?.addEventListener('click', next);
+    gallery.querySelector('.gallery-prev')?.addEventListener('click', prev);
+    
+    if(state.galleryInterval) clearInterval(state.galleryInterval);
+    state.galleryInterval = setInterval(next, 4000);
+}
+
+// --- FEATURE: MUSIC PLAYER ---
+function setupYouTubeAPI() {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+}
+
+window.onYouTubeIframeAPIReady = () => {
+    if (mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
+        createAudioPlayer(mainData.Song[0].YoutubeID);
+    }
+};
+
+function createAudioPlayer(songId) {
+    if (state.audioPlayer || !document.getElementById('audio-player')) return;
+    state.audioPlayer = new YT.Player('audio-player', {
+        videoId: songId,
+        playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1, 'mute': 1, 'playsinline': 1, 'playlist': songId },
+        events: { 'onReady': onAudioPlayerReady, 'onStateChange': onAudioPlayerStateChange }
+    });
+}
+
+function onAudioPlayerReady(event) {
+     if (invitationOpened || playMusicOnReady) {
+        event.target.unMute();
+        event.target.playVideo();
+        playMusicOnReady = false;
+    }
+}
+
+function onAudioPlayerStateChange(event) {
+    updateMusicButton(event.data === YT.PlayerState.PLAYING);
+}
+
+function setupMusicControlButton() {
+    const btn = document.getElementById('music-control-btn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        if (!state.audioPlayer) return;
+        if (state.isMusicPlaying) state.audioPlayer.pauseVideo();
+        else state.audioPlayer.playVideo();
+    });
+}
+
+function updateMusicButton(isPlaying) {
+    state.isMusicPlaying = isPlaying;
+    const musicBtn = document.getElementById('music-control-btn');
+    const musicBtnText = document.getElementById('music-btn-text');
+    if (!musicBtn || !musicBtnText) return;
+
+    if (isPlaying) {
+        musicBtn.classList.add('music-playing');
+        musicBtnText.textContent = 'Henti Muzik Latar';
+    } else {
+        musicBtn.classList.remove('music-playing');
+        musicBtnText.textContent = 'Mainkan Muzik Latar';
+    }
+}
+
+// --- FEATURE: WISHES (MARQUEE & DRAWER) ---
+function renderWishesMarquee() {
+    const container = document.getElementById('wishes-marquee-container');
+    if (!container) return;
+    const wishes = [...(mainData.RSVP || []), ...(mainData.WishesOnly || [])]
+        .filter(w => w.Wishes && w.Wishes.trim() !== '')
+        .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+    
+    if (wishes.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 text-center w-full">Jadilah yang pertama memberi ucapan!</p>`;
+        return;
+    }
+
+    const marqueeContent = wishes.map((wish, idx) =>
+        `<div class="wish-item" data-wish-idx="${idx}">
+            <div class="p-4 bg-white/80 rounded-lg shadow-sm h-full flex flex-col justify-center">
+                <p class="italic text-sm text-slate-700 whitespace-normal ${state.marqueeExpandedIndex === idx ? '' : 'line-clamp-2'}">
+                    "${escapeHTML(wish.Wishes)}"
+                </p>
+                <p class="font-semibold text-sm mt-2 text-right text-slate-800">
+                    - ${escapeHTML(wish.Name)}
+                </p>
+            </div>
+        </div>`
+    ).join('');
+
+    container.innerHTML = `<div class="wishes-marquee-content">${marqueeContent}${marqueeContent}</div>`;
+
+    container.querySelectorAll('.wish-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+            const idx = parseInt(e.currentTarget.dataset.wishIdx, 10);
+            state.marqueeExpandedIndex = state.marqueeExpandedIndex === idx ? null : idx;
+            renderWishesMarquee();
+        });
+    });
+}
+
+function renderWishes(page = 1) {
+    const listEl = document.getElementById('wishes-list');
+    const paginationEl = document.getElementById('wishes-pagination');
+    if (!listEl || !paginationEl) return;
+    
+    const allWishes = [...(mainData.RSVP || []), ...(mainData.WishesOnly || [])].filter(w => w.Wishes && w.Wishes.trim() !== '');
+    allWishes.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+    
+    const pageCount = Math.ceil(allWishes.length / WISHES_PER_PAGE) || 1;
+    const currentPage = Math.min(Math.max(page, 1), pageCount);
+    state.currentWishesPage = currentPage;
+    const start = (currentPage - 1) * WISHES_PER_PAGE;
+    const paginatedWishes = allWishes.slice(start, start + WISHES_PER_PAGE);
+
+    listEl.innerHTML = paginatedWishes.length > 0 ? paginatedWishes.map(wish => `
+        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+            <div class="flex justify-between items-center mb-1">
+                <p class="font-semibold flex items-center text-blue-600">${escapeHTML(wish.Name)}</p>
+                <p class="text-xs text-slate-400" data-timestamp="${wish.Timestamp}">${timeAgo(wish.Timestamp)}</p>
+            </div>
+            <p class="text-slate-800 text-base break-words">${escapeHTML(wish.Wishes)}</p>
+        </div>
+    `).join('') : '<p class="text-center text-slate-500 bg-white/70 rounded-full py-2">Jadilah yang pertama memberi ucapan!</p>';
+    
+    paginationEl.innerHTML = "";
+    if (pageCount > 1) {
+        for (let i = 1; i <= pageCount; i++) {
+            paginationEl.innerHTML += `<button class="mx-1 px-3 py-1 rounded-full ${i === currentPage ? "bg-blue-600 text-white" : "bg-slate-100"}" onclick="renderWishes(${i})">${i}</button>`;
+        }
+    }
+
+    if (state.timeAgoInterval) clearInterval(state.timeAgoInterval);
+    state.timeAgoInterval = setInterval(() => {
+        document.querySelectorAll('[data-timestamp]').forEach(el => {
+            el.textContent = timeAgo(el.getAttribute('data-timestamp'));
+        });
+    }, 60000);
+}
+
+function timeAgo(isoDate) {
+    if (!isoDate) return '';
+    const seconds = Math.floor((new Date() - new Date(isoDate)) / 1000);
+    if (seconds < 5) return "Baru sahaja";
+    if (seconds < 60) return `${seconds} saat lalu`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minit lalu`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} jam lalu`;
+    return `${Math.floor(hours / 24)} hari lalu`;
+}
+
+function setupWishForm() {
+    const form = document.getElementById('wish-form');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('wish-name-input');
+        const wishInput = document.getElementById('wish-input');
+        const name = nameInput.value.trim();
+        const wish = wishInput.value.trim();
+
+        if (!name || !wish) {
+            showToast("Sila isi nama dan ucapan.");
+            return;
+        }
+
+        showToast("Menghantar ucapan...");
+        try {
+            const response = await fetch('/.netlify/functions/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: "wish",
+                    name: name,
+                    wish: wish
+                })
+            });
+            const result = await response.json();
+            if (result && !result.error) {
+                showToast("Ucapan anda telah dihantar!");
+            } else {
+                showToast("Gagal simpan ke server (server error).");
+            }
+        } catch (err) {
+            showToast("Gagal simpan ke server. Sila cuba semula.");
+        }
+
+        // Local UI update (for instant feedback)
+        const newWish = { Name: name, Wishes: wish, Timestamp: new Date().toISOString() };
+        if (!mainData.WishesOnly) mainData.WishesOnly = [];
+        mainData.WishesOnly.unshift(newWish);
+
+        renderWishes(1);
+        renderWishesMarquee();
+        form.reset();
+    });
+}
+
+
+
+// --- FEATURE: MULTI-STEP RSVP ---
+function setupRsvpMultiStepForm() {
+    const container = document.getElementById('rsvp-multistep-form');
+    if (!container) return;
+
+    let formData = {};
+    let currentStep = 1;
+
+    const renderStep = () => {
+        container.innerHTML = ''; // Clear previous step
+        switch (currentStep) {
+            case 1: // Attendance
+                container.innerHTML = `
+                    <div class="flex-grow flex flex-col items-center justify-center text-center p-4">
+                        <p class="font-semibold text-lg mb-6">Adakah anda akan menghadiri majlis ini?</p>
+                        <div class="space-y-4 w-full max-w-xs">
+                            <button data-value="Hadir" class="rsvp-step-btn w-full bg-green-500 text-white font-bold py-4 px-6 rounded-lg transition hover:bg-green-600">Hadir</button>
+                            <button data-value="Tidak Hadir" class="rsvp-step-btn w-full bg-red-500 text-white font-bold py-4 px-6 rounded-lg transition hover:bg-red-600">Tidak Hadir</button>
+                        </div>
+                    </div>`;
+                break;
+            case 2: // Details
+                container.innerHTML = `
+                    <div class="flex-grow p-4 space-y-4">
+                        <p class="text-center text-slate-600">Sila isikan maklumat anda.</p>
+                        <div>
+                            <label class="font-semibold text-slate-700" for="rsvp-name">Nama Anda*</label>
+                            <input type="text" id="rsvp-name" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" required placeholder="Cth: Ali & Keluarga">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-slate-700" for="rsvp-phone">Nombor Telefon</label>
+                            <input type="tel" id="rsvp-phone" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="Cth: 0123456789">
+                        </div>
+                        ${formData.Attendance === 'Hadir' ? `
+                        <div>
+                            <label class="font-semibold text-slate-700">Bilangan Kehadiran*</label>
+                            <select id="rsvp-pax" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
+                                <option value="">Sila Pilih</option>
+                                ${[...Array(10).keys()].map(i => `<option value="${i+1}">${i+1} orang</option>`).join('')}
+                            </select>
+                        </div>` : ''}
+                        <div class="flex justify-between pt-4">
+                            <button data-action="back" class="rsvp-step-btn bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg">Kembali</button>
+                            <button data-action="next" class="rsvp-step-btn bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">Seterusnya</button>
+                        </div>
+                    </div>`;
+                break;
+            case 3: // Wish
+                container.innerHTML = `
+                    <div class="flex-grow p-4 space-y-4 flex flex-col">
+                         <p class="text-center text-slate-600">Tinggalkan ucapan ikhlas buat kami.</p>
+                        <div class="flex-grow">
+                            <label class="font-semibold text-slate-700 sr-only" for="rsvp-wish">Ucapan (Pilihan)</label>
+                            <textarea id="rsvp-wish" rows="5" class="h-full w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="Tulis ucapan anda di sini..."></textarea>
+                        </div>
+                        <div class="flex justify-between pt-4">
+                            <button data-action="back" class="rsvp-step-btn bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg">Kembali</button>
+                            <button data-action="submit" class="rsvp-step-btn bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">Hantar</button>
+                        </div>
+                    </div>`;
+                break;
+            case 4: // Success
+                container.innerHTML = `
+                    <div class="flex-grow flex flex-col items-center justify-center text-center p-4">
+                        <i data-lucide="party-popper" class="w-16 h-16 text-green-500 mb-4"></i>
+                        <h3 class="font-header text-2xl text-slate-800">Terima Kasih!</h3>
+                        <p class="text-slate-600 mt-2 mb-6">Respon anda telah direkodkan. Terima Kasih kerana memberikan masa anda untuk mengisi borang ini.</p>
+                        <button data-drawer="hadiah" class="bg-blue-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-500 transition flex items-center space-x-2">
+                            <i data-lucide="gift"></i>
+                            <span>Hantar Hadiah?</span>
+                        </button>
+                    </div>`;
+                lucide.createIcons();
+                break;
+        }
+    };
+
+    container.addEventListener('click', async e => {
+    const button = e.target.closest('.rsvp-step-btn');
+    if (!button) return;
+
+    if (button.dataset.value) { // Step 1 buttons
+        formData.Attendance = button.dataset.value;
+        currentStep = 2;
+        renderStep();
+    } else if (button.dataset.action === 'back') {
+        currentStep--;
+        renderStep();
+    } else if (button.dataset.action === 'next') { // Step 2 next
+        const name = document.getElementById('rsvp-name').value.trim();
+        const phone = document.getElementById('rsvp-phone').value.trim();
+        const paxEl = document.getElementById('rsvp-pax');
+        const pax = paxEl ? paxEl.value : '0';
+
+        if (!name || (formData.Attendance === 'Hadir' && !pax)) {
+            showToast("Sila lengkapkan semua maklumat.");
+            return;
+        }
+        formData.Name = name;
+        formData.PhoneNumber = phone;
+        formData.Pax = pax;
+        currentStep = 3;
+        renderStep();
+    } else if (button.dataset.action === 'submit') {
+        formData.Wishes = document.getElementById('rsvp-wish').value.trim();
+
+        showToast("Menghantar RSVP...");
+        try {
+            const response = await fetch('/.netlify/functions/submit', {   
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: "rsvp",
+                    ...formData
+                })
+            });
+            const result = await response.json();
+            if (result && !result.error) {
+                showToast("RSVP anda telah dihantar!");
+            } else {
+                showToast("Gagal simpan RSVP ke server (server error).");
+            }
+        } catch (err) {
+            showToast("Gagal simpan RSVP ke server.");
+        }
+
+        if (!mainData.RSVP) mainData.RSVP = [];
+        mainData.RSVP.unshift({ ...formData, Timestamp: new Date().toISOString() });
+
+        // Update UI for wishes (optional)
+        if (formData.Wishes) {
+            renderWishesMarquee();
+            renderWishes(1);
+        }
+        currentStep = 4;
+        renderStep();
+    }
+});
+
+
+    renderStep(); // Initial render
+}
+
+// --- OTHER FEATURES ---
+function renderGiftList() {
+    const listEl = document.getElementById('gift-list');
+    if (!listEl || !mainData.GiftInfo || !mainData.GiftInfo[0]) return;
+    listEl.innerHTML = giftLinkData.map(item =>
+        `<a href="${item.url}" target="_blank" class="flex items-center bg-slate-100 p-4 rounded-xl hover:bg-slate-200 transition">
+            <img src="${item.logo}" alt="${item.name}" class="w-10 h-10 object-contain mr-4" onerror="this.style.display='none'">
+            <span class="font-semibold text-slate-700">${item.name}</span>
+            <i data-lucide="chevron-right" class="ml-auto text-slate-400"></i>
+        </a>`
+    ).join('');
+    lucide.createIcons();
+}
+
+function renderContactList() {
+    const listEl = document.getElementById('contact-list');
+    if (!listEl || !mainData.ContactList) return;
+    listEl.innerHTML = mainData.ContactList.map(contact =>
+        `<div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl">
+            <div>
+                <p class="font-semibold text-slate-800">${escapeHTML(contact.Name)}</p>
+                <p class="text-slate-500">${escapeHTML(contact.PhoneNumber)}</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <a href="tel:${escapeHTML(contact.PhoneNumber)}" class="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition"><i data-lucide="phone"></i></a>
+                <a href="https://wa.me/6${escapeHTML(contact.PhoneNumber.replace(/\D/g,''))}" target="_blank" class="flex items-center justify-center w-10 h-10 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition"><i class="bi bi-whatsapp"></i></a>
+            </div>
+        </div>`
+    ).join('');
+    lucide.createIcons();
+}
+
+function generateCalendarLink() {
+    const event = mainData.TextSettings?.[0];
+    if (!event) return "#";
+    const format = (date) => new Date(date).toISOString().replace(/-|:|\.\d{3}/g, '');
+    const url = new URL('https://www.google.com/calendar/render');
+    url.searchParams.append('action', 'TEMPLATE');
+    url.searchParams.append('text', event.CalendarTitle || "Majlis Perkahwinan");
+    url.searchParams.append('dates', `${format(event.CalendarStartTimeISO)}/${format(event.CalendarEndTimeISO)}`);
+    url.searchParams.append('details', `Anda dijemput ke ${event.CalendarTitle || ""}.`);
+    url.searchParams.append('location', `${event.VenueName}, ${event.VenueAddress}`);
+    return url.href;
+}
+
+</script>
+
+</body>
+</html>
