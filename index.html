@@ -246,6 +246,7 @@
     };
     let scrollObserver, invitationOpened = false;
     let mainContentArea, drawersContainer;
+    let waitingToPlay = false;
     let shouldPlayMusicOnReady = false;
 
     // --- UTILITIES ---
@@ -412,22 +413,27 @@
         appContainer.style.opacity = '1';
 
         // --- Play YouTube music right after user interaction ---
-
         function tryPlayMusic() {
+            waitingToPlay = true; // Track intent to play music
             if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
                 state.audioPlayer.unMute();
                 state.audioPlayer.playVideo();
                 shouldPlayMusicOnReady = false;
+                waitingToPlay = false;
+                // Optionally, check if music started after 1s, else notify user to tap music btn
+                setTimeout(() => {
+                    if (!state.isMusicPlaying) showToast("Tekan ikon muzik jika lagu tidak kedengaran.");
+                }, 1500);
             } else {
-                // If player is not ready yet, try again after a short delay
-                setTimeout(tryPlayMusic, 350);
+                setTimeout(tryPlayMusic, 300);
             }
         }
 
-        tryPlayMusic();
+        tryPlayMusic(); 
 
-    }, 3000);
-}
+    }, 3000); 
+} 
+
 
 
 
@@ -768,12 +774,6 @@
         document.head.appendChild(tag);
     }
 
-    window.onYouTubeIframeAPIReady = () => {
-        if (mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
-            createAudioPlayer(mainData.Song[0].YoutubeID);
-        }
-    };
-
     function createAudioPlayer(songId) {
         if (state.audioPlayer || !document.getElementById('audio-player')) return;
         state.audioPlayer = new YT.Player('audio-player', {
@@ -783,13 +783,24 @@
         });
     }
 
+    window.onYouTubeIframeAPIReady = () => {
+    if (window.YT && mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
+        createAudioPlayer(mainData.Song[0].YoutubeID);
+        }
+    };
+
     function onAudioPlayerReady(event) {
-    if (shouldPlayMusicOnReady) {
+    if (shouldPlayMusicOnReady || waitingToPlay) {
         state.audioPlayer.unMute();
         state.audioPlayer.playVideo();
         shouldPlayMusicOnReady = false;
-        }
+        waitingToPlay = false;
+        setTimeout(() => {
+            if (!state.isMusicPlaying) showToast("Lagu dimainkan.");
+        }, 1500);
     }
+}
+
 
 
     function onAudioPlayerStateChange(event) {
@@ -1259,4 +1270,4 @@
     </script>
 
     </body>
-    </html>
+</html>
