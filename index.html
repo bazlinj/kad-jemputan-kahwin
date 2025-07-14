@@ -25,139 +25,9 @@
         <meta name="twitter:title" content="Jemputan ke Majlis Perkahwinan Nazrin & Serena">
         <meta name="twitter:description" content="Anda dijemput ke majlis bahagia Nazrin & Serena pada 16 Ogos 2025 di Asiana Grand Hall, Shah Alam. RSVP, kongsi ucapan, lokasi, dan maklumat hadiah – semuanya di sini.">
         <meta name="twitter:image" content="https://i.postimg.cc/Hsg20YCW/Pre-Wed-Nazrin-Serena-113.jpg">
-        
-
-        
-        <style>
-            /* General Styling */
-            body { font-family: 'Montserrat', sans-serif; background-color: #e2e8f0; font-weight: 400; }
-            .font-header { font-family: 'Montserrat', sans-serif; font-weight: 700; }
-            .font-script { font-family: 'Tangerine', cursive; }
-            .font-arabic { font-family: 'Scheherazade New', serif; }
-            button:focus, input:focus, textarea:focus, select:focus { outline: none !important; outline-offset: 0 !important; }
-
-            /* App Layout */
-            .app-wrapper { position: relative; z-index: 1; }
-            #app-video-bg { position: fixed; top: 50%; left: 50%; width: 100vw; height: auto; min-width: auto; min-height: 100%; z-index: 1; transform: translateX(-50%) translateY(-50%); object-fit: contain; background: #000; transition: opacity 1s ease-in; opacity: 0; pointer-events: none; }
-            
-            /* Page & Content Animations */
-            .page { position: absolute; inset: 0; z-index: 10; overflow-y: auto; background-color: transparent; }
-            .fade-in-up { opacity: 0; transform: translateY(30px); transition: opacity .8s, transform .8s; }
-            .fade-in-up.is-visible { opacity: 1; transform: translateY(0); }
-            .smooth-zoom-bg { animation: smooth-zoom-animation 30s infinite alternate ease-out; }
-            @keyframes smooth-zoom-animation { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
-            .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid #fff; width: 20px; height: 20px; animation: spin 1s linear infinite; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-            /* Loading Screen Animation */
-            .logo-reveal-animation {
-                animation: logo-reveal 2.5s ease-in-out forwards;
-            }
-            @keyframes logo-reveal {
-                0% { transform: scale(0.7); opacity: 0; }
-                70% { transform: scale(1.1); opacity: 1; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-
-            /* Glass Card Effect */
-            .glass-card { background-color: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 1rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
-
-            /* Bottom Navigation */
-            #bottom-nav {
-            z-index: 60;
-            height: 64px; 
-            padding-bottom: env(safe-area-inset-bottom);
-            }
-            .bottom-nav-btn.active { color: #2563EB; }
-            
-        
-
-            
-            /* Drawer System */
-
-    .drawer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 50;
-    visibility: hidden;
-    pointer-events: none;
-    }
-
-    .drawer.active {
-    visibility: visible;
-    pointer-events: auto;
-    }
-
-    .drawer-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0,0,0,0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    }
-
-    .drawer.active .drawer-backdrop {
-    opacity: 1;
-    }
-
-    .drawer-content {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateY(100%);
-    width: 100%;
-    max-width: 420px;
-    max-height: 80vh;
-    background: #fff;
-    border-radius: 1.5rem 1.5rem 0 0;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    z-index: 51;
-    overflow: hidden;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-
-    .drawer.active .drawer-content {
-    transform: translateX(-50%) translateY(0);
-    }
-            
-            /* Toast Notification */
-            .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 9999px; z-index: 100; transition: bottom 0.5s ease-in-out; font-size: 0.8rem; }
-            .toast.show { bottom: 80px; }
-
-            /* Wishes Marquee */
-            .wishes-marquee { overflow: hidden; white-space: nowrap; display: flex; }
-            .wishes-marquee-content { display: flex; animation: marquee 40s linear infinite; }
-            .wishes-marquee:hover .wishes-marquee-content { animation-play-state: paused; }
-            .wish-item { flex-shrink: 0; width: 280px; margin-right: 1rem; cursor: pointer; }
-            .wish-name { display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;}
-            @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-            .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; line-clamp: 2; }
-
-            /* Music Button Animation */
-            @keyframes music-bars { 0% { transform: scaleY(0.3); } 25% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } 75% { transform: scaleY(0.8); } 100% { transform: scaleY(0.3); } }
-            .music-playing svg path { animation: music-bars 1.2s infinite ease-in-out; transform-origin: center; }
-            .music-playing svg path:nth-child(2) { animation-delay: 0.2s; }
-            .music-playing svg path:nth-child(3) { animation-delay: 0.4s; }
-            
-            /* New Timeline Style for Aturcara Majlis */
-            .timeline { position: relative; padding-left: 2.9rem; }
-            .timeline::before { content: ''; position: absolute; left: 1.125rem; top: 0.5rem; bottom: 0.5rem; width: 2px; background-color: #cbd5e1; }
-            .timeline-item { position: relative; margin-bottom: 1.5rem; }
-            .timeline-item:last-child { margin-bottom: 0; }
-            .timeline-dot { position: absolute; left: -2.125rem; top: 0.375rem; width: 0.75rem; height: 0.75rem; background-color: #3b82f6; border-radius: 9999px; border: 2px solid white; box-shadow: 0 0 0 2px #3b82f6; }
-            .timeline-time { font-weight: 700; color: #475569; }
-            .timeline-title { font-weight: 600; color: #1e293b; }
-            .timeline-description { font-size: 0.875rem; color: #64748b; }
-        </style>
-    </head>
+        <link rel="stylesheet" href="assets/styles.css">
+   
+       </head>
 
     <body>
         
@@ -248,7 +118,7 @@
     let mainContentArea, drawersContainer;
     let waitingToPlay = false;
     let shouldPlayMusicOnReady = false;
-    let audioPlayer = null;
+    
 
     // --- UTILITIES ---
     function escapeHTML(str) {
@@ -402,17 +272,7 @@
         document.getElementById('open-invitation-btn').addEventListener('click', openInvitation, { once: true }
         );
 
-        document.addEventListener('click', function userInitiatedPlay() {
-  if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
-    state.audioPlayer.unMute();
-    state.audioPlayer.playVideo();
-    state.isMusicPlaying = true;
-    updateMusicButton(true);
-    document.removeEventListener('click', userInitiatedPlay);
-  }
-});
-
-    }
+     }
 
 
 
@@ -440,27 +300,18 @@
     // Fade out loading screen
     hideLoadingScreen();
 
-         // Fade in the main app
-        appContainer.style.opacity = '1';
+     // Fade in the main app
+    appContainer.style.opacity = '1';
 
-        // --- Play YouTube music right after user interaction ---
-        function tryPlayMusic() {
-            waitingToPlay = true;
-            if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
-                state.audioPlayer.unMute();
-                state.audioPlayer.playVideo();
-                shouldPlayMusicOnReady = false;
-                waitingToPlay = false;
-                setTimeout(() => {
-                    if (!state.isMusicPlaying) showToast("Muzik cuba dimainkan");
-                }, 1500);
-            } else {
-                setTimeout(tryPlayMusic, 300);
-            }
+    if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
+        state.audioPlayer.unMute();
+        state.audioPlayer.playVideo();
+        state.isMusicPlaying = true;
+        updateMusicButton(true);
         }
-        tryPlayMusic();
     }, 3000);
 }
+
 
 function onAudioPlayerReady(event) {
     if (shouldPlayMusicOnReady || waitingToPlay) {
@@ -818,26 +669,33 @@ function setupYouTubeAPI() {
     document.head.appendChild(tag);
     }
 
-    function playMusicOnInteraction() {
-    if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
-        state.audioPlayer.unMute();
-        state.audioPlayer.playVideo();
-        state.isMusicPlaying = true;
-        updateMusicButton(true);
-        
-        document.removeEventListener('click', playMusicOnInteraction);
-        document.removeEventListener('keydown', playMusicOnInteraction);
-        document.removeEventListener('touchstart', playMusicOnInteraction);
+    function createAudioPlayer(youtubeId) {
+    // Remove previous player if exists
+    const audioPlayerDiv = document.getElementById('audio-player');
+    if (!audioPlayerDiv) return;
+    audioPlayerDiv.innerHTML = ''; // Remove old iframes if any
+
+    // Create a new YouTube Player iframe
+    state.audioPlayer = new YT.Player('audio-player', {
+        height: '0',  // Hidden (no visual player)
+        width: '0',
+        videoId: youtubeId,
+        playerVars: {
+            autoplay: 0,       // Don't autoplay on iframe load, we control it manually
+            controls: 0,
+            loop: 1,
+            playlist: youtubeId,
+            modestbranding: 1,
+            fs: 0,
+            disablekb: 1,
+            rel: 0
+        },
+        events: {
+            'onReady': onAudioPlayerReady,
+            'onStateChange': onAudioPlayerStateChange
         }
+     });
     }
-
-    document.addEventListener('click', playMusicOnInteraction);
-    document.addEventListener('keydown', playMusicOnInteraction);
-    document.addEventListener('touchstart', playMusicOnInteraction);
-
-    
-
-    
 
     window.onYouTubeIframeAPIReady = () => {
     if (window.YT && mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
@@ -852,10 +710,16 @@ function setupYouTubeAPI() {
     if (!btn) return;
     btn.addEventListener('click', () => {
         if (!state.audioPlayer) return;
-        if (state.isMusicPlaying) state.audioPlayer.pauseVideo();
-        else state.audioPlayer.playVideo();
+        if (state.isMusicPlaying) {
+            updateMusicButton(false); // Immediate UI update
+            state.audioPlayer.pauseVideo();
+        } else {
+            updateMusicButton(true); // Immediate UI update
+            state.audioPlayer.playVideo();
+             }
         });
     }
+
 
     function updateMusicButton(isPlaying) {
     state.isMusicPlaying = isPlaying;
@@ -872,15 +736,7 @@ function setupYouTubeAPI() {
      }
     }
 
-    // Call this function immediately after user clicks "Buka Jemputan"
-    function tryPlayMusic() {
-    if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
-        state.audioPlayer.unMute();
-        state.audioPlayer.playVideo();
-    } else {
-        setTimeout(tryPlayMusic, 300);
-    }
-    }
+
 
 
     // --- FEATURE: WISHES (MARQUEE & DRAWER) ---
