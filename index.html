@@ -918,7 +918,10 @@ function setupWishForm() {
         isSubmitting = true;
 
         const btn = form.querySelector('button[type="submit"]');
-        if (btn) btn.disabled = true;
+        const oldHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader" class="animate-spin w-5 h-5 mr-2"></i> Menghantar...`;
+        lucide.createIcons();
 
         const nameInput = document.getElementById('wish-name-input');
         const wishInput = document.getElementById('wish-input');
@@ -927,7 +930,9 @@ function setupWishForm() {
 
         if (!name || !wish) {
             showToast("Sila isi nama dan ucapan.");
-            if (btn) btn.disabled = false;
+            btn.disabled = false;
+            btn.innerHTML = oldHTML;
+            lucide.createIcons();
             isSubmitting = false;
             return;
         }
@@ -961,10 +966,14 @@ function setupWishForm() {
         renderWishesMarquee();
         form.reset();
 
-        if (btn) btn.disabled = false;
+        btn.disabled = false;
+        btn.innerHTML = oldHTML;
+        lucide.createIcons();
         isSubmitting = false;
     });
 }
+
+
 
 function truncateName(name, max = 15) {
     return name.length > max ? name.slice(0, max - 1) + "…" : name;
@@ -1141,32 +1150,40 @@ function setupRsvpMultiStepForm() {
             currentStep = 4;
             renderStep();
         } else if (button.dataset.action === 'submit' && currentStep === 5) {
-            formData.Wishes = document.getElementById('rsvp-wish').value.trim();
-            showToast("Menghantar RSVP...");
-            try {
-                const response = await fetch('/.netlify/functions/submit', {   
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: "addRsvp",
-                        payload: {
-                            Name: formData.Name,
-                            PhoneNumber: formData.PhoneNumber,
-                            Attendance: "Hadir",
-                            Pax: formData.Pax,
-                            Wishes: formData.Wishes
-                        }
-                    })
-                });
-                const result = await response.json();
-                if (result && !result.error) {
-                    showToast("RSVP anda telah dihantar!");
-                } else {
-                    showToast("Gagal simpan RSVP ke server (server error).");
+    if (button.disabled) return; // Block double click
+    formData.Wishes = document.getElementById('rsvp-wish').value.trim();
+
+    // Spinner effect
+    const oldHTML = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `<i data-lucide="loader" class="animate-spin w-5 h-5 mr-2"></i> Menghantar...`;
+    lucide.createIcons();
+
+    showToast("Menghantar RSVP...");
+    try {
+        const response = await fetch('/.netlify/functions/submit', {   
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: "addRsvp",
+                payload: {
+                    Name: formData.Name,
+                    PhoneNumber: formData.PhoneNumber,
+                    Attendance: "Hadir",
+                    Pax: formData.Pax,
+                    Wishes: formData.Wishes
                 }
-            } catch (err) {
-                showToast("Gagal simpan RSVP ke server.");
-            }
+            })
+        });
+        const result = await response.json();
+        if (result && !result.error) {
+            showToast("RSVP anda telah dihantar!");
+        } else {
+            showToast("Gagal simpan RSVP ke server (server error).");
+        }
+    } catch (err) {
+        showToast("Gagal simpan RSVP ke server.");
+    }
 
             if (!mainData.RSVP) mainData.RSVP = [];
             mainData.RSVP.unshift({ ...formData, Timestamp: new Date().toISOString() });
