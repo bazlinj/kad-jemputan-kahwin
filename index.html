@@ -39,8 +39,8 @@
         button:focus, input:focus, textarea:focus, select:focus { outline: none !important; outline-offset: 0 !important; }
 
         /* App Layout */
-        .app-wrapper { max-width: 420px; margin: auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 100vh; overflow: hidden; background-color: #f8fafc; }
-        #app-video-bg { position: absolute; top: 50%; left: 50%; width: auto; height: auto; min-width: 100%; min-height: 100%; z-index: 1; transform: translateX(-50%) translateY(-50%); object-fit: cover; transition: opacity 1s ease-in; opacity: 0; }
+        .app-wrapper { position: relative; z-index: 1; }
+        #app-video-bg { position: fixed; top: 50%; left: 50%; width: 100vw; height: auto; min-width: auto; min-height: 100%; z-index: 1; transform: translateX(-50%) translateY(-50%); object-fit: contain; background: #000; transition: opacity 1s ease-in; opacity: 0; pointer-events: none; }
         
         /* Page & Content Animations */
         .page { position: absolute; inset: 0; z-index: 10; overflow-y: auto; background-color: transparent; }
@@ -131,7 +131,7 @@
 }
         
         /* Toast Notification */
-        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 9999px; z-index: 100; transition: bottom 0.5s ease-in-out; }
+        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 9999px; z-index: 100; transition: bottom 0.5s ease-in-out; font-size: 0.8rem; }
         .toast.show { bottom: 80px; }
 
         /* Wishes Marquee */
@@ -161,6 +161,7 @@
 </head>
 
 <body>
+    
 <div class="app-wrapper" role="main">
     <video autoplay loop muted playsinline id="app-video-bg"></video>
     
@@ -177,13 +178,15 @@
                     <p id="cover-date" class="font-semibold text-lg"></p>
                     <p id="cover-location" class="font-medium"></p>
                 </div>
-                <button id="open-invitation-btn" class="mt-8 bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-3 w-full" aria-label="Buka Jemputan">
+                <button id="open-invitation-btn" class="mt-8 bg-blue-600 text-white font-bold py-3 px-8 rounded-md shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-3 w-full" aria-label="Buka Jemputan">
                     <i data-lucide="mail"></i>
                     <span>Buka Jemputan</span>
                 </button>
             </div>
-            <div id="cover-loading" class="text-slate-700" aria-live="polite">
-                <p>Anda telah dijemput...</p>
+            <div id="cover-loading" class="text-slate-700 flex flex-col items-center justify-center" aria-live="polite">
+                 <img src="media/snlogo.svg"
+         alt="Wedding Logo" class="w-16 h-16 mx-auto mb-3" onerror="this.onerror=null; this.src='https://placehold.co/64x64/e0e0e0/333?text=Logo';">
+         <div class="text-base text-slate-700 font-semibold text-center">Anda telah dijemput...</div>
                 <div class="spinner border-slate-700/30 border-t-slate-700 mx-auto mt-4"></div>
             </div>
         </div>
@@ -200,9 +203,10 @@
         <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-sm shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-[60] rounded-t-2xl transition-transform duration-300" aria-label="Navigasi utama">
             <div class="flex justify-around">
                 <button data-drawer="utama" class="bottom-nav-btn active flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Utama" aria-label="Utama"><i data-lucide="home"></i></button>
-                <button data-drawer="lokasi" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Lokasi" aria-label="Lokasi"><i data-lucide="map-pin"></i></button>
+                <button data-drawer="rsvp" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="RSVP Kehadiran" aria-label="RSVP Kehadiran"><i data-lucide="calendar-check"></i></button>
                 <button data-drawer="ucapan" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Ucapan" aria-label="Ucapan"><i data-lucide="message-square-heart"></i></button>
                 <button data-drawer="hadiah" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Hadiah" aria-label="Hadiah"><i data-lucide="gift"></i></button>
+                <button data-drawer="lokasi" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Lokasi" aria-label="Lokasi"><i data-lucide="map-pin"></i></button>
                 <button data-drawer="telefon" class="bottom-nav-btn flex-1 flex flex-col items-center justify-center p-3 text-slate-600 transition-colors" title="Hubungi" aria-label="Hubungi"><i data-lucide="phone"></i></button>
             </div>
         </nav>
@@ -460,9 +464,10 @@ function renderAppContent() {
             <div class="absolute inset-0 smooth-zoom-bg" style="background-image: inherit; background-position: center; background-size: cover;"></div>
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col items-center justify-end text-center p-6 text-white z-10">
-            <h1 class="font-script text-5xl leading-tight">${escapeHTML(settings.GroomName)}</h1>
-            <h2 class="font-script text-4xl my-1">&</h2>
-            <h1 class="font-script text-5xl leading-tight">${escapeHTML(settings.BrideName)}</h1>
+            <p class="text-lg md:text-xl font-arabic leading-relaxed mb-2">
+  <br>
+  <p class="mt-2 text-base font-medium italic">"Semoga Allah memberkati kalian berdua dan menghimpunkan kalian dalam kebaikan."</p>
+<p class="font-script text-4xl text-white">#aWinforSerena</p>
         </div>
     </div>`;
 
@@ -506,7 +511,7 @@ function renderAppContent() {
     </div>`;
 
     const galleryHTML = (galleryImages.length > 0) ? `<div class="glass-card p-4 fade-in-up">
-        <h2 class="font-header text-2xl text-slate-800 text-center mb-4">Galeri</h2>
+        <h2 class="font-header text-2xl text-slate-800 text-center mb-4">#aWinForSerena</h2>
         <div class="gallery-container relative w-full h-64 overflow-hidden rounded-lg">
             ${galleryImages.map((img, idx) => `<img src="${escapeHTML(img.ImageURL)}" class="gallery-item absolute w-full h-full object-cover transition-opacity duration-1000" style="opacity: ${idx === 0 ? 1 : 0};" onerror="this.onerror=null; this.src='https://placehold.co/400x256/e0e0e0/333?text=Image';">`).join('')}
             <button class="gallery-prev absolute top-1/2 left-2 -translate-y-1/2 bg-black/30 text-white rounded-full p-1 z-10 hover:bg-black/50 transition"><i data-lucide="chevron-left"></i></button>
@@ -515,14 +520,26 @@ function renderAppContent() {
     </div>` : '';
 
     const wishesCarouselHTML = `<div class="glass-card p-6 text-center fade-in-up">
-        <h2 class="font-header text-2xl text-slate-800 mb-4">Setulus Ingatan</h2>
-        <div id="wishes-marquee-container" class="wishes-marquee"></div>
-        <button data-drawer="ucapan" class="mt-4 bg-blue-100/70 text-blue-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-200/70 transition-all transform hover:scale-105">Tulis Ucapan Anda</button>
-    </div>  `;
+  <h2 class="font-header text-2xl text-slate-800 mb-4">Setulus Ingatan</h2>
+  <div id="wishes-marquee-container" class="wishes-marquee mb-4"></div>
+  <button data-drawer="ucapan" class="mb-6 bg-blue-100/70 text-blue-800 font-bold py-3 px-8 rounded-md shadow-lg hover:bg-blue-200/70 transition-all transform hover:scale-105">
+    Tulis Ucapan Anda
+  </button>
+  <hr class="my-4 border-slate-300/60">
+  <div class="flex flex-col items-center gap-1">
+    <span class="font-semibold text-slate-700 text-sm mb-2">Instagram Hashtag</span>
+    <a href="https://www.instagram.com/explore/tags/aWinForSerena/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 hover:underline">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" class="w-5 h-5">
+      <span class="font-semibold text-blue-700 text-sm">#aWinForSerena</span>
+    </a>
+    <span class="text-xs text-slate-500 mt-1">Kongsi gambar anda dengan hashtag ini!</span>
+  </div>
+</div>`;
 
-    const rsvpButtonHTML = `<div class="glass-card p-6 text-center fade-in-up">
+
+const rsvpButtonHTML = `<div class="glass-card p-6 text-center fade-in-up">
         
-        <button data-drawer="rsvp" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105">RSVP: Kehadiran</button>
+        <button data-drawer="rsvp" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-md shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105">RSVP: Kehadiran</button>
     </div>`;
 
     const musicButtonHTML = `<div class="glass-card p-4 text-center fade-in-up">
@@ -532,7 +549,7 @@ function renderAppContent() {
         </button>
     </div>`;
 
-    mainContentArea.innerHTML = `<div class="p-4 space-y-6" style="padding-bottom:calc(88px + env(safe-area-inset-bottom));">${heroHTML}${mainCardHTML}${galleryHTML}${wishesCarouselHTML}${rsvpButtonHTML}${musicButtonHTML}</div>`;
+    mainContentArea.innerHTML = `<div class="p-4 space-y-6" style="padding-bottom:calc(88px + env(safe-area-inset-bottom));">${heroHTML}${mainCardHTML}${galleryHTML}${rsvpButtonHTML}${wishesCarouselHTML}${musicButtonHTML}</div>`;
 
     
     // --- Drawers setup ---
@@ -541,26 +558,50 @@ function renderAppContent() {
             <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?q=${encodeURIComponent(settings.VenueAddress)}&t=&z=16&ie=UTF8&iwloc=B&output=embed"></iframe>
         </div>
         <div class="mt-4 flex justify-center space-x-4">
-            <a href="${settings.GoogleMapsLink}" target="_blank" class="inline-flex items-center space-x-2 bg-blue-100/70 text-blue-800 px-5 py-2 rounded-full font-semibold hover:bg-blue-200/70 transition"><span>Google Maps</span></a>
-            <a href="${settings.WazeLink}" target="_blank" class="inline-flex items-center space-x-2 bg-blue-100/70 text-blue-800 px-5 py-2 rounded-full font-semibold hover:bg-blue-200/70 transition"><span>Waze</span></a>
+            <a href="${settings.GoogleMapsLink}" target="_blank" class="inline-flex items-center space-x-2 bg-blue-100/70 text-blue-800 px-5 py-2 rounded-md font-semibold hover:bg-blue-200/70 transition"><span>Google Maps</span></a>
+            <a href="${settings.WazeLink}" target="_blank" class="inline-flex items-center space-x-2 bg-blue-100/70 text-blue-800 px-5 py-2 rounded-md font-semibold hover:bg-blue-200/70 transition"><span>Waze</span></a>
         </div>
     </div>`;
 
-    const ucapanDrawerContent = `<div class="flex flex-col h-full">
-        <div id="wishes-list" class="flex-grow overflow-y-auto space-y-4 p-1 pb-4"></div>
-        <div id="wishes-pagination" class="py-2 flex justify-center flex-shrink-0"></div>
-        <div class="pt-2 flex-shrink-0">
-            <form id="wish-form" class="space-y-2 bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-lg">
-                <input type="text" id="wish-name-input" placeholder="Nama Anda" class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                <div class="flex items-center space-x-2">
-                    <input type="text" id="wish-input" placeholder="Tulis ucapan anda..." class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
-                    <button type="submit" class="bg-green-500 text-white w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full transition transform hover:scale-110"><i data-lucide="send"></i></button>
-                </div>
-            </form>
-        </div>
-    </div>`;
+    const ucapanDrawerContent = `
+    <div class="flex flex-col h-full justify-center items-center p-4">
+        <form id="wish-form" class="w-full max-w-sm space-y-4">
+            <div>
+                <label for="wish-name-input" class="block text-xs font-semibold text-slate-700 mb-1">Nama Anda</label>
+                <input type="text" id="wish-name-input" class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Nama Anda">
+            </div>
+            <div>
+                <label for="wish-input" class="block text-xs font-semibold text-slate-700 mb-1">Ucapan</label>
+                <textarea id="wish-input" rows="6" class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Tulis ucapan anda..."></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-5 py-3 flex items-center justify-center gap-2 transition-all shadow font-semibold text-sm">
+                <span>Hantar</span>
+                <i data-lucide="send-horizontal" class="w-5 h-5"></i>
+                </button>
+
+            </div>
+        </form>
+    </div>
+`;
+
     
-    const giftFooter = (mainData.GiftInfo && mainData.GiftInfo[0]) ? `<div class="p-4 text-center"><p class="text-xs text-slate-500">Gunakan info ini semasa pembelian Kad Hadiah</p><p class="text-sm text-slate-700 mt-1">${escapeHTML(mainData.GiftInfo[0].RecipientName)} <span class="font-semibold">${escapeHTML(mainData.GiftInfo[0].RecipientPhoneNumber)}</span></p></div>` : "";
+    const giftFooter = (mainData.GiftInfo && mainData.GiftInfo[0]) ? `<div class="p-4 text-center space-y-2">
+  <p class="text-xs text-slate-500">Gunakan info ini semasa pembelian Kad Hadiah</p>
+  <div class="flex items-center justify-center gap-2 bg-blue-100 rounded-md px-2 py-1 inline-flex">
+    <span id="gift-name" class="text-xs text-slate-700 truncate">${escapeHTML(mainData.GiftInfo[0].RecipientName)}</span>
+    <button onclick="copyToClipboard('gift-name')" class="p-0.5" aria-label="Salin Nama">
+      <i data-lucide="copy" class="w-3 h-3 text-slate-500 hover:text-blue-600"></i>
+    </button>
+  </div>
+  <div class="flex items-center justify-center gap-2 bg-blue-100 rounded-md px-2 py-1 inline-flex">
+    <span id="gift-phone" class="text-xs font-semibold text-slate-700">${escapeHTML(mainData.GiftInfo[0].RecipientPhoneNumber)}</span>
+    <button onclick="copyToClipboard('gift-phone')" class="p-0.5" aria-label="Salin Nombor">
+      <i data-lucide="copy" class="w-3 h-3 text-slate-500 hover:text-blue-600"></i>
+    </button>
+  </div>
+</div>
+` : "";
 
     const rsvpFooter = `<div class="p-4 text-center"><p class="text-xs text-slate-500">Kad Digital ini dibina oleh <a href="https://b.my/bazlinj" target="_blank" class="font-semibold text-blue-600 hover:underline">@bazlinj</a></p></div>`;
 
@@ -633,6 +674,16 @@ function setupScrollAnimations(container) {
         elements.forEach(el => el.classList.add('is-visible'));
     }
 }
+
+function copyToClipboard(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    // Copy the text to clipboard
+    navigator.clipboard.writeText(el.innerText)
+        .then(() => showToast("Disalin!")) // Your toast notification
+        .catch(() => showToast("Gagal salin"));
+}
+
 
 // --- FEATURE: COUNTDOWN ---
 function startCountdown() {
@@ -773,19 +824,27 @@ function renderWishesMarquee() {
     }
 
     const marqueeContent = wishes.map((wish, idx) =>
-        `<div class="wish-item" data-wish-idx="${idx}">
-            <div class="p-4 bg-white/80 rounded-lg shadow-sm h-full flex flex-col justify-center">
-                <p class="italic text-sm text-slate-700 whitespace-normal ${state.marqueeExpandedIndex === idx ? '' : 'line-clamp-2'}">
-                    "${escapeHTML(wish.Wishes)}"
-                </p>
-                <p class="font-semibold text-sm mt-2 text-right text-slate-800">
-                    - ${escapeHTML(wish.Name)}
-                </p>
+    `<div class="wish-item" data-wish-idx="${idx}">
+        <div class="p-4 bg-white/80 rounded-lg shadow-sm h-full flex flex-col justify-center">
+            <p class="italic text-sm text-slate-700 whitespace-normal ${state.marqueeExpandedIndex === idx ? '' : 'line-clamp-2'}">
+                "${escapeHTML(wish.Wishes)}"
+            </p>
+            <hr class="border-slate-200/70 my-2">
+            <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+                <span class="flex items-center gap-1">
+                    <i data-lucide="user" class="w-3 h-3"></i>${escapeHTML(wish.Name)}
+                </span>
+                <span class="flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3 h-3"></i>${timeAgo(wish.Timestamp)}
+                </span>
             </div>
-        </div>`
-    ).join('');
+        </div>
+    </div>`
+).join('');
+
 
     container.innerHTML = `<div class="wishes-marquee-content">${marqueeContent}${marqueeContent}</div>`;
+    lucide.createIcons();
 
     container.querySelectorAll('.wish-item').forEach(el => {
         el.addEventListener('click', (e) => {
@@ -1071,8 +1130,8 @@ function renderContactList() {
                 <p class="text-slate-500">${escapeHTML(contact.PhoneNumber)}</p>
             </div>
             <div class="flex items-center space-x-2">
-                <a href="tel:${escapeHTML(contact.PhoneNumber)}" class="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition"><i data-lucide="phone"></i></a>
-                <a href="https://wa.me/6${escapeHTML(contact.PhoneNumber.replace(/\D/g,''))}" target="_blank" class="flex items-center justify-center w-10 h-10 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition"><i class="bi bi-whatsapp"></i></a>
+                <a href="tel:${escapeHTML(contact.PhoneNumber)}" class="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition"><i data-lucide="phone" class="w-4 h-4"></i></a>
+                <a href="https://wa.me/6${escapeHTML(contact.PhoneNumber.replace(/\D/g,''))}" target="_blank" class="flex items-center justify-center w-10 h-10 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition"><i class="bi bi-whatsapp w-5 h-5" style="font-size: 1.25rem; line-height: 1.25rem;"></i></a>
             </div>
         </div>`
     ).join('');
