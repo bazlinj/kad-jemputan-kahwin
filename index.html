@@ -909,8 +909,16 @@ function timeAgo(isoDate) {
 function setupWishForm() {
     const form = document.getElementById('wish-form');
     if (!form) return;
+    let isSubmitting = false;
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (isSubmitting) return; // Block double submit
+        isSubmitting = true;
+
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
+
         const nameInput = document.getElementById('wish-name-input');
         const wishInput = document.getElementById('wish-input');
         const name = nameInput.value.trim();
@@ -918,20 +926,19 @@ function setupWishForm() {
 
         if (!name || !wish) {
             showToast("Sila isi nama dan ucapan.");
+            if (btn) btn.disabled = false;
+            isSubmitting = false;
             return;
         }
 
         showToast("Menghantar ucapan...");
         try {
             const response = await fetch('/.netlify/functions/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: "addWish",
-            payload: {
-            Name: name,
-            Wishes: wish
-            }
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: "addWish",
+                    payload: { Name: name, Wishes: wish }
                 })
             });
             const result = await response.json();
@@ -952,8 +959,12 @@ function setupWishForm() {
         renderWishes(1);
         renderWishesMarquee();
         form.reset();
+
+        if (btn) btn.disabled = false;
+        isSubmitting = false;
     });
 }
+
 
 
 
