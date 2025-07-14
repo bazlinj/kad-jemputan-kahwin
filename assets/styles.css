@@ -103,12 +103,13 @@
 
             /* Wishes Marquee */
             .wishes-marquee { overflow: hidden; white-space: nowrap; display: flex; }
-            .wishes-marquee-content { display: flex; animation: marquee 40s linear infinite; }
+            .wishes-marquee-content { display: flex; animation: marquee 140s linear infinite; }
             .wishes-marquee:hover .wishes-marquee-content { animation-play-state: paused; }
             .wish-item { flex-shrink: 0; width: 280px; margin-right: 1rem; cursor: pointer; }
             .wish-name { display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;}
             @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
             .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; line-clamp: 2; }
+            
 
             /* Music Button Animation */
             @keyframes music-bars { 0% { transform: scaleY(0.3); } 25% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } 75% { transform: scaleY(0.8); } 100% { transform: scaleY(0.3); } }
