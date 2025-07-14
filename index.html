@@ -865,12 +865,14 @@ function setupWishForm() {
         showToast("Menghantar ucapan...");
         try {
             const response = await fetch('/.netlify/functions/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: "addWish",
-                    name: name,
-                    wish: wish
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: "addWish",
+            payload: {
+            Name: name,
+            Wishes: wish
+            }
                 })
             });
             const result = await response.json();
