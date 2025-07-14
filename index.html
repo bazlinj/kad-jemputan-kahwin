@@ -868,7 +868,7 @@ function setupWishForm() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: "wish",
+                    action: "addWish",
                     name: name,
                     wish: wish
                 })
@@ -1008,9 +1008,15 @@ function setupRsvpMultiStepForm() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: "rsvp",
-                    ...formData
-                })
+                 action: "addRsvp",
+                payload: {
+                Name: formData.Name,
+                PhoneNumber: formData.PhoneNumber,
+                Attendance: formData.Attendance,
+                Pax: formData.Pax,
+                Wishes: formData.Wishes
+                }
+            })
             });
             const result = await response.json();
             if (result && !result.error) {
