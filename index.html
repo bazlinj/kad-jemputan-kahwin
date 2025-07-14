@@ -139,6 +139,7 @@
         .wishes-marquee-content { display: flex; animation: marquee 40s linear infinite; }
         .wishes-marquee:hover .wishes-marquee-content { animation-play-state: paused; }
         .wish-item { flex-shrink: 0; width: 280px; margin-right: 1rem; cursor: pointer; }
+        .wish-name { display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;}
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
         .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; line-clamp: 2; }
 
@@ -823,24 +824,24 @@ function renderWishesMarquee() {
         return;
     }
 
-    const marqueeContent = wishes.map((wish, idx) =>
-    `<div class="wish-item" data-wish-idx="${idx}">
-        <div class="p-4 bg-white/80 rounded-lg shadow-sm h-full flex flex-col justify-center">
-            <p class="italic text-sm text-slate-700 whitespace-normal ${state.marqueeExpandedIndex === idx ? '' : 'line-clamp-2'}">
-                "${escapeHTML(wish.Wishes)}"
-            </p>
-            <hr class="border-slate-200/70 my-2">
-            <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
-                <span class="flex items-center gap-1">
-                    <i data-lucide="user" class="w-3 h-3"></i>${escapeHTML(wish.Name)}
-                </span>
-                <span class="flex items-center gap-1">
-                    <i data-lucide="clock" class="w-3 h-3"></i>${timeAgo(wish.Timestamp)}
-                </span>
+        const marqueeContent = wishes.map((wish, idx) =>
+        `<div class="wish-item" data-wish-idx="${idx}">
+            <div class="p-4 bg-white/80 rounded-lg shadow-sm h-full flex flex-col justify-center">
+                <p class="italic text-sm text-slate-700 whitespace-normal ${state.marqueeExpandedIndex === idx ? '' : 'line-clamp-2'}">
+                    "${escapeHTML(wish.Wishes)}"
+                </p>
+                <hr class="border-slate-200/70 my-2">
+                <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                        <i data-lucide="user" class="w-3 h-3"></i><span class="wish-name">${escapeHTML(truncateName(wish.Name, 15))}</span>
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i data-lucide="clock" class="w-3 h-3"></i>${timeAgo(wish.Timestamp)}
+                    </span>
+                </div>
             </div>
-        </div>
-    </div>`
-).join('');
+        </div>`
+    ).join('');
 
 
     container.innerHTML = `<div class="wishes-marquee-content">${marqueeContent}${marqueeContent}</div>`;
@@ -965,6 +966,9 @@ function setupWishForm() {
     });
 }
 
+function truncateName(name, max = 15) {
+    return name.length > max ? name.slice(0, max - 1) + "…" : name;
+}
 
 
 
@@ -995,16 +999,16 @@ function setupRsvpMultiStepForm() {
                         <p class="text-center text-slate-600">Sila isikan maklumat anda.</p>
                         <div>
                             <label class="font-semibold text-slate-700" for="rsvp-name">Nama Anda*</label>
-                            <input type="text" id="rsvp-name" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" required placeholder="Cth: Ali & Keluarga">
+                            <input type="text" id="rsvp-name" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" required placeholder="Cth: Ali">
                         </div>
                         <div>
                             <label class="font-semibold text-slate-700" for="rsvp-phone">Nombor Telefon</label>
-                            <input type="tel" id="rsvp-phone" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="Cth: 0123456789">
+                            <input type="tel" id="rsvp-phone" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="Cth: 60123456789">
                         </div>
                         ${formData.Attendance === 'Hadir' ? `
                         <div>
                             <label class="font-semibold text-slate-700">Bilangan Kehadiran*</label>
-                            <select id="rsvp-pax" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white">
+                           <select id="rsvp-pax" class="appearance-none mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 shadow-sm" >
                                 <option value="">Sila Pilih</option>
                                 ${[...Array(10).keys()].map(i => `<option value="${i+1}">${i+1} orang</option>`).join('')}
                             </select>
