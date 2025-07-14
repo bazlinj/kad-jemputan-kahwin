@@ -294,10 +294,16 @@
     function hideLoadingScreen() {
   const loadingScreen = document.getElementById('loading-screen');
   loadingScreen.style.opacity = '0';
-  loadingScreen.addEventListener('transitionend', () => {
+  let called = false;
+  const onTransitionEnd = () => {
+    if (called) return;
+    called = true;
     loadingScreen.style.display = 'none';
-  }, { once: true });
-    }
+    loadingScreen.removeEventListener('transitionend', onTransitionEnd);
+  };
+  loadingScreen.addEventListener('transitionend', onTransitionEnd);
+  setTimeout(onTransitionEnd, 1200);
+}
 
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
@@ -393,7 +399,19 @@
 
         document.getElementById('cover-loading').style.display = 'none';
         document.getElementById('cover-content').classList.remove('opacity-0');
-        document.getElementById('open-invitation-btn').addEventListener('click', openInvitation, { once: true });
+        document.getElementById('open-invitation-btn').addEventListener('click', openInvitation, { once: true }
+        );
+
+        document.addEventListener('click', function userInitiatedPlay() {
+  if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
+    state.audioPlayer.unMute();
+    state.audioPlayer.playVideo();
+    state.isMusicPlaying = true;
+    updateMusicButton(true);
+    document.removeEventListener('click', userInitiatedPlay);
+  }
+});
+
     }
 
 
@@ -800,31 +818,26 @@ function setupYouTubeAPI() {
     document.head.appendChild(tag);
     }
 
-    function createAudioPlayer(songId) {
-    if (state.audioPlayer || !document.getElementById('audio-player')) return;
-    state.audioPlayer = new YT.Player('audio-player', {
-        videoId: songId,
-        playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1, 'mute': 1, 'playsinline': 1, 'playlist': songId },
-        events: { 
-            'onReady': (event) => {
-                event.target.mute(); // Ensure muted on start
-                onAudioPlayerReady(event);
-            }, 
-            'onStateChange': onAudioPlayerStateChange 
+    function playMusicOnInteraction() {
+    if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
+        state.audioPlayer.unMute();
+        state.audioPlayer.playVideo();
+        state.isMusicPlaying = true;
+        updateMusicButton(true);
+        
+        document.removeEventListener('click', playMusicOnInteraction);
+        document.removeEventListener('keydown', playMusicOnInteraction);
+        document.removeEventListener('touchstart', playMusicOnInteraction);
         }
-    });
-
-    document.addEventListener('click', function userInitiatedPlay() {
-    if (state.audioPlayer) {
-      state.audioPlayer.playVideo();
-      state.audioPlayer.unMute();
-      state.isMusicPlaying = true;
-      updateMusicButton(true);
-      document.removeEventListener('click', userInitiatedPlay);
-        }
-    });
-
     }
+
+    document.addEventListener('click', playMusicOnInteraction);
+    document.addEventListener('keydown', playMusicOnInteraction);
+    document.addEventListener('touchstart', playMusicOnInteraction);
+
+    
+
+    
 
     window.onYouTubeIframeAPIReady = () => {
     if (window.YT && mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
