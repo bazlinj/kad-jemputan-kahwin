@@ -248,6 +248,7 @@
     let mainContentArea, drawersContainer;
     let waitingToPlay = false;
     let shouldPlayMusicOnReady = false;
+    let audioPlayer = null;
 
     // --- UTILITIES ---
     function escapeHTML(str) {
@@ -281,6 +282,21 @@
         }
         
         return errors;
+    }
+
+    // -- LOADING SCREEN --
+    function showLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  loadingScreen.style.display = 'flex';
+  loadingScreen.style.opacity = '1';
+    }
+
+    function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  loadingScreen.style.opacity = '0';
+  loadingScreen.addEventListener('transitionend', () => {
+    loadingScreen.style.display = 'none';
+  }, { once: true });
     }
 
     // --- INITIALIZATION ---
@@ -396,43 +412,53 @@
     }, { once: true });
 
     // 2. Show loading screen
-    loadingScreen.style.display = 'flex';
+    showLoadingScreen();
 
     // 3. Render main content in the background
     renderAppContent();
 
     // 4. Wait for animation to finish, then show app
-    setTimeout(() => {
-        // Fade out loading screen
-        loadingScreen.style.opacity = '0';
-        loadingScreen.addEventListener('transitionend', () => {
-            loadingScreen.style.display = 'none';
-        }, { once: true });
+   setTimeout(() => {
+    // Fade out loading screen
+    hideLoadingScreen();
 
-        // Fade in the main app
+         // Fade in the main app
         appContainer.style.opacity = '1';
 
         // --- Play YouTube music right after user interaction ---
         function tryPlayMusic() {
-            waitingToPlay = true; // Track intent to play music
+            waitingToPlay = true;
             if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
                 state.audioPlayer.unMute();
                 state.audioPlayer.playVideo();
                 shouldPlayMusicOnReady = false;
                 waitingToPlay = false;
-                // Optionally, check if music started after 1s, else notify user to tap music btn
                 setTimeout(() => {
-                    if (!state.isMusicPlaying) showToast("Tekan ikon muzik jika lagu tidak kedengaran.");
+                    if (!state.isMusicPlaying) showToast("Autoplay Music disabled by Browser");
                 }, 1500);
             } else {
                 setTimeout(tryPlayMusic, 300);
             }
         }
+        tryPlayMusic();
+    }, 3000);
+}
 
-        tryPlayMusic(); 
+function onAudioPlayerReady(event) {
+    if (shouldPlayMusicOnReady || waitingToPlay) {
+        state.audioPlayer.unMute();
+        state.audioPlayer.playVideo();
+        shouldPlayMusicOnReady = false;
+        waitingToPlay = false;
+        setTimeout(() => {
+            if (!state.isMusicPlaying) showToast("Lagu dimainkan.");
+        }, 1500);
+    }
+}
 
-    }, 3000); 
-} 
+function onAudioPlayerStateChange(event) {
+    updateMusicButton(event.data === YT.PlayerState.PLAYING);
+}
 
 
 
@@ -768,69 +794,68 @@
     }
 
     // --- FEATURE: MUSIC PLAYER ---
-    function setupYouTubeAPI() {
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
+function setupYouTubeAPI() {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
     }
 
     function createAudioPlayer(songId) {
-        if (state.audioPlayer || !document.getElementById('audio-player')) return;
-        state.audioPlayer = new YT.Player('audio-player', {
-            videoId: songId,
-            playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1, 'mute': 1, 'playsinline': 1, 'playlist': songId },
-            events: { 'onReady': onAudioPlayerReady, 'onStateChange': onAudioPlayerStateChange }
-        });
+    if (state.audioPlayer || !document.getElementById('audio-player')) return;
+    state.audioPlayer = new YT.Player('audio-player', {
+        videoId: songId,
+        playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1, 'mute': 1, 'playsinline': 1, 'playlist': songId },
+        events: { 
+            'onReady': (event) => {
+                event.target.mute(); // Ensure muted on start
+                onAudioPlayerReady(event);
+            }, 
+            'onStateChange': onAudioPlayerStateChange 
+        }
+    });
     }
 
     window.onYouTubeIframeAPIReady = () => {
     if (window.YT && mainData.Song?.[0]?.YoutubeID && !state.audioPlayer) {
         createAudioPlayer(mainData.Song[0].YoutubeID);
-        }
+     }
     };
 
-    function onAudioPlayerReady(event) {
-    if (shouldPlayMusicOnReady || waitingToPlay) {
-        state.audioPlayer.unMute();
-        state.audioPlayer.playVideo();
-        shouldPlayMusicOnReady = false;
-        waitingToPlay = false;
-        setTimeout(() => {
-            if (!state.isMusicPlaying) showToast("Lagu dimainkan.");
-        }, 1500);
-    }
-}
-
-
-
-    function onAudioPlayerStateChange(event) {
-        updateMusicButton(event.data === YT.PlayerState.PLAYING);
-    }
-
     function setupMusicControlButton() {
-        const btn = document.getElementById('music-control-btn');
-        if (!btn) return;
-        btn.addEventListener('click', () => {
-            if (!state.audioPlayer) return;
-            if (state.isMusicPlaying) state.audioPlayer.pauseVideo();
-            else state.audioPlayer.playVideo();
+    const btn = document.getElementById('music-control-btn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        if (!state.audioPlayer) return;
+        if (state.isMusicPlaying) state.audioPlayer.pauseVideo();
+        else state.audioPlayer.playVideo();
         });
     }
 
     function updateMusicButton(isPlaying) {
-        state.isMusicPlaying = isPlaying;
-        const musicBtn = document.getElementById('music-control-btn');
-        const musicBtnText = document.getElementById('music-btn-text');
-        if (!musicBtn || !musicBtnText) return;
+    state.isMusicPlaying = isPlaying;
+    const musicBtn = document.getElementById('music-control-btn');
+    const musicBtnText = document.getElementById('music-btn-text');
+    if (!musicBtn || !musicBtnText) return;
 
-        if (isPlaying) {
-            musicBtn.classList.add('music-playing');
-            musicBtnText.textContent = 'Henti Muzik Latar';
-        } else {
-            musicBtn.classList.remove('music-playing');
-            musicBtnText.textContent = 'Mainkan Muzik Latar';
-        }
+    if (isPlaying) {
+        musicBtn.classList.add('music-playing');
+        musicBtnText.textContent = 'Henti Muzik Latar';
+    } else {
+        musicBtn.classList.remove('music-playing');
+        musicBtnText.textContent = 'Mainkan Muzik Latar';
+     }
     }
+
+    // Call this function immediately after user clicks "Buka Jemputan"
+    function tryPlayMusic() {
+    if (state.audioPlayer && typeof state.audioPlayer.playVideo === 'function') {
+        state.audioPlayer.unMute();
+        state.audioPlayer.playVideo();
+    } else {
+        setTimeout(tryPlayMusic, 300);
+    }
+    }
+
 
     // --- FEATURE: WISHES (MARQUEE & DRAWER) ---
     function renderWishesMarquee() {
