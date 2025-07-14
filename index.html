@@ -434,7 +434,7 @@
                 shouldPlayMusicOnReady = false;
                 waitingToPlay = false;
                 setTimeout(() => {
-                    if (!state.isMusicPlaying) showToast("Autoplay Music disabled by Browser");
+                    if (!state.isMusicPlaying) showToast("Muzik cuba dimainkan");
                 }, 1500);
             } else {
                 setTimeout(tryPlayMusic, 300);
@@ -813,6 +813,17 @@ function setupYouTubeAPI() {
             'onStateChange': onAudioPlayerStateChange 
         }
     });
+
+    document.addEventListener('click', function userInitiatedPlay() {
+    if (state.audioPlayer) {
+      state.audioPlayer.playVideo();
+      state.audioPlayer.unMute();
+      state.isMusicPlaying = true;
+      updateMusicButton(true);
+      document.removeEventListener('click', userInitiatedPlay);
+        }
+    });
+
     }
 
     window.onYouTubeIframeAPIReady = () => {
@@ -820,6 +831,8 @@ function setupYouTubeAPI() {
         createAudioPlayer(mainData.Song[0].YoutubeID);
      }
     };
+
+    
 
     function setupMusicControlButton() {
     const btn = document.getElementById('music-control-btn');
