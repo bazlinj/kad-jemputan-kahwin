@@ -3,12 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="description" content="Jemputan digital ke Majlis Perkahwinan. RSVP, ucapan, lokasi, hadiah dan info pengantin.">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jemputan ke Majlis Perkahwinan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jemputan ke Majlis Perkahwinan Nazrin & Serena</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Tangerine:wght@700&family=Scheherazade+New:wght@700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/Hsg20YCW/Pre-Wed-Nazrin-Serena-113.jpg">
+
+    <!-- General Description -->
+    <meta name="description" content="Anda dijemput ke majlis bahagia Nazrin & Serena pada 16 Ogos 2025 di Asiana Grand Hall, Shah Alam. RSVP, kongsi ucapan, lokasi, dan maklumat hadiah – semuanya di sini.">
+
+    <!-- Open Graph (Facebook, WhatsApp, Telegram, etc) -->
+    <meta property="og:title" content="Jemputan ke Majlis Perkahwinan Nazrin & Serena">
+    <meta property="og:description" content="Anda dijemput ke majlis bahagia Nazrin & Serena pada 16 Ogos 2025 di Asiana Grand Hall, Shah Alam. RSVP, kongsi ucapan, lokasi, dan maklumat hadiah – semuanya di sini.">
+    <meta property="og:image" content="https://i.postimg.cc/Hsg20YCW/Pre-Wed-Nazrin-Serena-113.jpg">
+    <meta property="og:url" content="https://nazrin-serena.netlify.app/">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card (Twitter, X, LINE, etc) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jemputan ke Majlis Perkahwinan Nazrin & Serena">
+    <meta name="twitter:description" content="Anda dijemput ke majlis bahagia Nazrin & Serena pada 16 Ogos 2025 di Asiana Grand Hall, Shah Alam. RSVP, kongsi ucapan, lokasi, dan maklumat hadiah – semuanya di sini.">
+    <meta name="twitter:image" content="https://i.postimg.cc/Hsg20YCW/Pre-Wed-Nazrin-Serena-113.jpg">
+    
+
+    
     <style>
         /* General Styling */
         body { font-family: 'Montserrat', sans-serif; background-color: #e2e8f0; font-weight: 400; }
@@ -46,9 +67,12 @@
         /* Bottom Navigation */
         #bottom-nav {
         z-index: 60;
-        height: 64px; /* or 56px or whatever your nav actually is */
+        height: 64px; 
+        padding-bottom: env(safe-area-inset-bottom);
         }
         .bottom-nav-btn.active { color: #2563EB; }
+        
+    
 
         
         /* Drawer System */
@@ -508,7 +532,8 @@ function renderAppContent() {
         </button>
     </div>`;
 
-    mainContentArea.innerHTML = `<div class="p-4 space-y-6 pb-24">${heroHTML}${mainCardHTML}${galleryHTML}${wishesCarouselHTML}${rsvpButtonHTML}${musicButtonHTML}</div>`;
+    mainContentArea.innerHTML = `<div class="p-4 space-y-6" style="padding-bottom:calc(88px + env(safe-area-inset-bottom));">${heroHTML}${mainCardHTML}${galleryHTML}${wishesCarouselHTML}${rsvpButtonHTML}${musicButtonHTML}</div>`;
+
     
     // --- Drawers setup ---
     const locationDrawerContent = `<div class="space-y-4">
