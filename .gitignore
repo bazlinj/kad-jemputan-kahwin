@@ -1,0 +1,19 @@
+# Node modules
+node_modules/
+
+# Build output (if any, e.g., dist/ or build/)
+dist/
+build/
+
+# Tailwind or PostCSS cache
+.pnpm-debug.log
+.npm-debug.log
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE/project files
+.vscode/
+.idea/

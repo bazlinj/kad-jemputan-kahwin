@@ -7,7 +7,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
         <title>Jemputan ke Majlis Perkahwinan Nazrin & Serena</title>
         <link rel="icon" type="image/x-icon" href="favicon.ico">
-        <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Tangerine:wght@700&family=Scheherazade+New:wght@700&display=swap" rel="stylesheet">
@@ -25,6 +24,9 @@
         <meta name="twitter:title" content="Jemputan ke Majlis Perkahwinan Nazrin & Serena">
         <meta name="twitter:description" content="Anda dijemput ke majlis bahagia Nazrin & Serena pada 16 Ogos 2025 di Asiana Grand Hall, Shah Alam. RSVP, kongsi ucapan, lokasi, dan maklumat hadiah – semuanya di sini.">
         <meta name="twitter:image" content="https://i.postimg.cc/Hsg20YCW/Pre-Wed-Nazrin-Serena-113.jpg">
+        
+        <!-- Style Traditional CSS + TailwindCSS -->
+        <link rel="stylesheet" href="assets/final.css">
         <link rel="stylesheet" href="assets/styles.css">
    
        </head>
@@ -35,8 +37,8 @@
         <video autoplay loop muted playsinline id="app-video-bg"></video>
         
         <!-- COVER PAGE -->
-        <div id="cover-page-wrapper" class="absolute inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-500" aria-modal="true" role="dialog">
-            <div id="cover-page" class="relative w-full max-w-sm flex flex-col items-center justify-center text-center p-8 glass-card" tabindex="-1">
+        <div id="cover-page-wrapper" class="fixed inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-500 overflow-auto">
+            <div id="cover-page" class="relative w-full max-w-sm max-h-screen overflow-auto flex flex-col items-center justify-center text-center p-8 glass-card" tabindex="-1">
                 <div id="cover-content" class="text-slate-800 opacity-0 transition-opacity duration-1000 delay-500 w-full">
                     <img src="media/snlogo.svg" alt="Wedding Logo" class="w-24 h-24 mx-auto mb-4" onerror="this.onerror=null; this.src='https://placehold.co/96x96/e0e0e0/333?text=Logo';">
                     <h2 class="font-header text-2xl tracking-widest text-slate-700">WALIMATULURUS</h2>
