@@ -979,9 +979,10 @@ function setupRsvpMultiStepForm() {
 
     let formData = {};
     let currentStep = 1;
+    let isAttending = null; // null, true, false
 
     const renderStep = () => {
-        container.innerHTML = ''; // Clear previous step
+        container.innerHTML = '';
         switch (currentStep) {
             case 1: // Attendance
                 container.innerHTML = `
@@ -993,7 +994,33 @@ function setupRsvpMultiStepForm() {
                         </div>
                     </div>`;
                 break;
-            case 2: // Details
+            case 2: // If Tidak Hadir: Short End Screen
+                container.innerHTML = `
+                    <div class="flex-grow flex flex-col items-center justify-center text-center p-4">
+                        <i data-lucide="smile" class="w-16 h-16 text-slate-400 mb-4"></i>
+                        <h3 class="font-header text-2xl text-slate-800 mb-2">Terima kasih atas maklum balas!</h3>
+                        <p class="text-slate-600 mb-6">Semoga kita berjumpa di lain kesempatan. Anda boleh...</p>
+                        <div class="flex flex-col gap-3 w-full">
+                            <button id="open-ucapan-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-md shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center space-x-2">
+                                <i data-lucide="message-square-heart"></i>
+                                <span>Hantar Ucapan</span>
+                            </button>
+                            <button data-drawer="hadiah" class="bg-blue-800 text-white font-bold py-3 px-8 rounded-md shadow-lg hover:bg-blue-500 transition-all flex items-center space-x-2">
+                                <i data-lucide="gift"></i>
+                                <span>Hantar Hadiah</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+                setTimeout(() => {
+                    // Wait for DOM
+                    document.getElementById('open-ucapan-btn')?.addEventListener('click', () => {
+                        setActiveDrawer('ucapan');
+                    });
+                }, 50);
+                break;
+            case 3: // Name & Phone (Hadir only)
                 container.innerHTML = `
                     <div class="flex-grow p-4 space-y-4">
                         <p class="text-center text-slate-600">Sila isikan maklumat anda.</p>
@@ -1005,24 +1032,33 @@ function setupRsvpMultiStepForm() {
                             <label class="font-semibold text-slate-700" for="rsvp-phone">Nombor Telefon</label>
                             <input type="tel" id="rsvp-phone" class="mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="Cth: 60123456789">
                         </div>
-                        ${formData.Attendance === 'Hadir' ? `
-                        <div>
-                            <label class="font-semibold text-slate-700">Bilangan Kehadiran*</label>
-                           <select id="rsvp-pax" class="appearance-none mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 shadow-sm" >
-                                <option value="">Sila Pilih</option>
-                                ${[...Array(10).keys()].map(i => `<option value="${i+1}">${i+1} orang</option>`).join('')}
-                            </select>
-                        </div>` : ''}
                         <div class="flex justify-between pt-4">
                             <button data-action="back" class="rsvp-step-btn bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg">Kembali</button>
                             <button data-action="next" class="rsvp-step-btn bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">Seterusnya</button>
                         </div>
                     </div>`;
                 break;
-            case 3: // Wish
+            case 4: // Pax (Hadir only)
+                container.innerHTML = `
+                    <div class="flex-grow p-4 space-y-4">
+                        <p class="text-center text-slate-600">Berapa orang akan hadir?</p>
+                        <div>
+                            <label class="font-semibold text-slate-700">Bilangan Kehadiran*</label>
+                            <select id="rsvp-pax" class="appearance-none mt-2 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 shadow-sm" >
+                                <option value="">Sila Pilih</option>
+                                ${[...Array(10).keys()].map(i => `<option value="${i+1}">${i+1} orang</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex justify-between pt-4">
+                            <button data-action="back" class="rsvp-step-btn bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-lg">Kembali</button>
+                            <button data-action="next" class="rsvp-step-btn bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">Seterusnya</button>
+                        </div>
+                    </div>`;
+                break;
+            case 5: // Wish (Hadir only, optional)
                 container.innerHTML = `
                     <div class="flex-grow p-4 space-y-4 flex flex-col">
-                         <p class="text-center text-slate-600">Tinggalkan ucapan ikhlas buat kami.</p>
+                        <p class="text-center text-slate-600">Tinggalkan ucapan ikhlas buat kami. (Pilihan)</p>
                         <div class="flex-grow">
                             <label class="font-semibold text-slate-700 sr-only" for="rsvp-wish">Ucapan (Pilihan)</label>
                             <textarea id="rsvp-wish" rows="5" class="h-full w-full px-4 py-3 border border-slate-300 rounded-lg bg-white" placeholder="Tulis ucapan anda di sini..."></textarea>
@@ -1033,102 +1069,119 @@ function setupRsvpMultiStepForm() {
                         </div>
                     </div>`;
                 break;
-            case 4: // Success
-    container.innerHTML = `
-        <div class="flex-grow flex flex-col items-center justify-center text-center p-4">
-            <i data-lucide="party-popper" class="w-16 h-16 text-green-500 mb-4"></i>
-            <h3 class="font-header text-2xl text-slate-800">Terima Kasih!</h3>
-            <p class="text-slate-600 mt-2 mb-6">Respon anda telah direkodkan. Terima Kasih kerana memberikan masa anda untuk mengisi borang ini.</p>
-            ${
-                formData.Attendance === "Hadir"
-                ? `<a href="${generateCalendarLink()}" target="_blank" class="mb-4 inline-flex items-center justify-center w-full space-x-2 bg-slate-100/50 text-slate-700 px-4 py-3 rounded-md font-semibold hover:bg-slate-200/70 transition">
-                    <i data-lucide="calendar-plus"></i>
-                    <span>Tambah ke Kalendar</span>
-                </a>`
-                : ""
-            }
-            <button data-drawer="hadiah" class="bg-blue-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-500 transition flex items-center space-x-2 mt-2">
-                <i data-lucide="gift"></i>
-                <span>Hantar Hadiah?</span>
-            </button>
-        </div>
-    `;
-    lucide.createIcons();
-    break;
-
+            case 6: // Success (Hadir only)
+                container.innerHTML = `
+                    <div class="flex-grow flex flex-col items-center justify-center text-center p-4">
+                        <i data-lucide="party-popper" class="w-16 h-16 text-green-500 mb-4"></i>
+                        <h3 class="font-header text-2xl text-slate-800">Terima Kasih!</h3>
+                        <p class="text-slate-600 mt-2 mb-6">Respon anda telah direkodkan. Terima kasih kerana memberikan masa anda untuk mengisi borang ini.</p>
+                        <a href="${generateCalendarLink()}" target="_blank" class="mb-4 inline-flex items-center justify-center w-full space-x-2 bg-slate-100/50 text-slate-700 px-4 py-3 rounded-md font-semibold hover:bg-slate-200/70 transition">
+                            <i data-lucide="calendar-plus"></i>
+                            <span>Tambah ke Kalendar</span>
+                        </a>
+                        <button data-drawer="hadiah" class="bg-blue-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-500 transition flex items-center space-x-2 mt-2">
+                            <i data-lucide="gift"></i>
+                            <span>Hantar Hadiah</span>
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                break;
         }
     };
 
     container.addEventListener('click', async e => {
-    const button = e.target.closest('.rsvp-step-btn');
-    if (!button) return;
+        const button = e.target.closest('.rsvp-step-btn');
+        if (!button) return;
 
-    if (button.dataset.value) { // Step 1 buttons
-        formData.Attendance = button.dataset.value;
-        currentStep = 2;
-        renderStep();
-    } else if (button.dataset.action === 'back') {
-        currentStep--;
-        renderStep();
-    } else if (button.dataset.action === 'next') { // Step 2 next
-        const name = document.getElementById('rsvp-name').value.trim();
-        const phone = document.getElementById('rsvp-phone').value.trim();
-        const paxEl = document.getElementById('rsvp-pax');
-        const pax = paxEl ? paxEl.value : '0';
-
-        if (!name || (formData.Attendance === 'Hadir' && !pax)) {
-            showToast("Sila lengkapkan semua maklumat.");
-            return;
-        }
-        formData.Name = name;
-        formData.PhoneNumber = phone;
-        formData.Pax = pax;
-        currentStep = 3;
-        renderStep();
-    } else if (button.dataset.action === 'submit') {
-        formData.Wishes = document.getElementById('rsvp-wish').value.trim();
-
-        showToast("Menghantar RSVP...");
-        try {
-            const response = await fetch('/.netlify/functions/submit', {   
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                 action: "addRsvp",
-                payload: {
-                Name: formData.Name,
-                PhoneNumber: formData.PhoneNumber,
-                Attendance: formData.Attendance,
-                Pax: formData.Pax,
-                Wishes: formData.Wishes
-                }
-            })
-            });
-            const result = await response.json();
-            if (result && !result.error) {
-                showToast("RSVP anda telah dihantar!");
+        // Step 1: Attendance
+        if (button.dataset.value) {
+            if (button.dataset.value === 'Tidak Hadir') {
+                isAttending = false;
+                currentStep = 2; // End screen for Tidak Hadir
+                renderStep();
             } else {
-                showToast("Gagal simpan RSVP ke server (server error).");
+                isAttending = true;
+                currentStep = 3;
+                renderStep();
             }
-        } catch (err) {
-            showToast("Gagal simpan RSVP ke server.");
         }
-
-        if (!mainData.RSVP) mainData.RSVP = [];
-        mainData.RSVP.unshift({ ...formData, Timestamp: new Date().toISOString() });
-
-        // Update UI for wishes (optional)
-        if (formData.Wishes) {
-            renderWishesMarquee();
-            renderWishes(1);
+        // Hadir path: Step 3 (Name & Phone)
+        else if (button.dataset.action === 'back' && currentStep === 3) {
+            currentStep = 1;
+            renderStep();
+        } else if (button.dataset.action === 'next' && currentStep === 3) {
+            const name = document.getElementById('rsvp-name').value.trim();
+            const phone = document.getElementById('rsvp-phone').value.trim();
+            if (!name) {
+                showToast("Sila lengkapkan nama anda.");
+                return;
+            }
+            formData.Name = name;
+            formData.PhoneNumber = phone;
+            currentStep = 4;
+            renderStep();
         }
-        currentStep = 4;
-        renderStep();
-    }
-});
+        // Hadir path: Step 4 (Pax)
+        else if (button.dataset.action === 'back' && currentStep === 4) {
+            currentStep = 3;
+            renderStep();
+        } else if (button.dataset.action === 'next' && currentStep === 4) {
+            const pax = document.getElementById('rsvp-pax').value;
+            if (!pax) {
+                showToast("Sila pilih bilangan kehadiran.");
+                return;
+            }
+            formData.Pax = pax;
+            currentStep = 5;
+            renderStep();
+        }
+        // Hadir path: Step 5 (Wish)
+        else if (button.dataset.action === 'back' && currentStep === 5) {
+            currentStep = 4;
+            renderStep();
+        } else if (button.dataset.action === 'submit' && currentStep === 5) {
+            formData.Wishes = document.getElementById('rsvp-wish').value.trim();
+            showToast("Menghantar RSVP...");
+            try {
+                const response = await fetch('/.netlify/functions/submit', {   
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "addRsvp",
+                        payload: {
+                            Name: formData.Name,
+                            PhoneNumber: formData.PhoneNumber,
+                            Attendance: "Hadir",
+                            Pax: formData.Pax,
+                            Wishes: formData.Wishes
+                        }
+                    })
+                });
+                const result = await response.json();
+                if (result && !result.error) {
+                    showToast("RSVP anda telah dihantar!");
+                } else {
+                    showToast("Gagal simpan RSVP ke server (server error).");
+                }
+            } catch (err) {
+                showToast("Gagal simpan RSVP ke server.");
+            }
 
+            if (!mainData.RSVP) mainData.RSVP = [];
+            mainData.RSVP.unshift({ ...formData, Timestamp: new Date().toISOString() });
 
-    renderStep(); // Initial render
+            // Update UI for wishes (optional)
+            if (formData.Wishes) {
+                renderWishesMarquee();
+                renderWishes(1);
+            }
+            currentStep = 6;
+            renderStep();
+        }
+    });
+
+    renderStep();
 }
 
 // --- OTHER FEATURES ---
