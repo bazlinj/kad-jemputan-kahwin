@@ -56,5 +56,7 @@ module.exports = {
     // Custom classes if any injected in HTML/JS
     'logo-reveal-animation', 'sr-only',
   ],
-  plugins: [],
+  plugins: [
+  require('@tailwindcss/line-clamp'),
+  ],
 }
