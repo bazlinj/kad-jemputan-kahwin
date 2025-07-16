@@ -36,7 +36,7 @@
         <div class="app-wrapper" role="main">
 
         <!-- AUDIO BG -->
-        <audio id="wedding-music" preload="auto" loop style="display:none">
+        <audio id="wedding-music" preload="auto" loop muted style="display:none">
         <source src="media/bg-audio.mp3" type="audio/mpeg">
         </audio>
             
@@ -300,36 +300,45 @@
         const coverWrapper = document.getElementById('cover-page-wrapper');
         const loadingScreen = document.getElementById('loading-screen');
         const appContainer = document.getElementById('app-container');
+        const music = document.getElementById('wedding-music');
 
-        // 1. Fade out cover page
-        coverWrapper.style.opacity = '0';
-        coverWrapper.addEventListener('transitionend', () => {
-            coverWrapper.style.display = 'none';
-        }, { once: true });
-
-        // 2. Show loading screen
-        showLoadingScreen();
-
-        // 3. Render main content in the background
-        renderAppContent();
-
-        // 4. Wait for animation to finish, then show app
-        setTimeout(() => {
-            hideLoadingScreen();
-            appContainer.style.opacity = '1';
-
-            // --- PLAY MUSIC here! ---
-            const music = document.getElementById('wedding-music');
+        
         if (music && typeof music.play === 'function') {
         music.currentTime = 0;
         music.volume = 0;
-        music.play().then(() => {
-            fadeAudio(music, 1, 1000);
-        }).catch(() => {
+        music.muted = true; // helps on iOS/Chrome
+        const playPromise = music.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                setTimeout(() => {
+                    music.muted = false;
+                    fadeAudio(music, 1, 1000);
+                }, 100);
+            }).catch(() => {
+                
             });
         }
-        }, 3000);
     }
+
+    // 1. Fade out cover page
+    coverWrapper.style.opacity = '0';
+    coverWrapper.addEventListener('transitionend', () => {
+        coverWrapper.style.display = 'none';
+    }, { once: true });
+
+    // 2. Show loading screen
+    showLoadingScreen();
+
+    // 3. Render main content in the background
+    renderAppContent();
+
+    // 4. Wait for animation to finish, then show app
+    setTimeout(() => {
+        hideLoadingScreen();
+        appContainer.style.opacity = '1';
+        
+    }, 3000);
+}
 
 
         // --- DRAWER SYSTEM ---
