@@ -735,6 +735,7 @@
 
         // --- FEATURE: WISHES (MARQUEE & DRAWER) ---
         let marqueeAnimationId;
+
 function renderWishesMarquee() {
   const container = document.getElementById('wishes-marquee-container');
   if (!container) return;
@@ -743,8 +744,13 @@ function renderWishesMarquee() {
   if (marqueeAnimationId) cancelAnimationFrame(marqueeAnimationId);
 
   // Prepare data
-  const wishes = [...(mainData.RSVP || []), ...(mainData.WishesOnly || [])]
-    .filter(w => w.Wishes && w.Wishes.trim())
+  const wishes = [
+    ...(mainData.RSVP || []),
+    ...(mainData.WishesOnly || [])
+  ]
+    .filter(w =>
+      typeof w.Wishes === 'string' && w.Wishes.trim() !== ''
+    )
     .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
 
   if (wishes.length === 0) {
